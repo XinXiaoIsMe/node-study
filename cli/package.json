@@ -1,0 +1,16 @@
+{
+  "name": "study-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "license": "MIT",
+  "bin": {
+    "study-cli": "./index.js"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.8.2",
+    "commander": "^14.0.0",
+    "download-git-repo": "^3.0.2",
+    "ora": "^8.2.0"
+  }
+}
