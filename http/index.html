@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client</title>
+</head>
+<body>
+  <form id="login-form">
+    <input id="login-username" type="text" placeholder="请输入用户名" />
+    <br />
+    <input id="login-password" type="password" placeholder="请输入密码" />
+    <br />
+    <button id="login-btn">登录</button>
+  </form>
+  <script>
+    const oForm = document.getElementById('login-form');
+    const oUsernameInput = document.getElementById('login-username');
+    const oPasswordInput = document.getElementById('login-password');
+    const oLoginBtn = document.getElementById('login-btn');
+
+    oForm.addEventListener('submit', e => {
+      e.preventDefault();
+    });
+
+    oLoginBtn.addEventListener('click', () => {
+      const username = oUsernameInput.value;
+      const password = oPasswordInput.value;
+      fetch('/login', {
+        method: 'post',
+        headers: {
+          'Content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          username,
+          password
+        })
+      }).then(res => res.json())
+        .then(res => {
+          const { status, msg, data } = res;
+          if (status) {
+            console.log(data);
+          }
+          alert(msg);
+        });
+    });
+  </script>
+</body>
+</html>
