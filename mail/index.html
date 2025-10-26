@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <form action="/" onsubmit="return false">
+    <div>
+      <label for="mail-account">
+        邮箱：<input id="mail-account" />
+      </label>
+    </div>
+    <div>
+      <label from="mail-subject">
+        主题：<input id="mail-subject" />
+      </label>
+    </div>
+    <div>
+      <label from="mail-content">
+        内容：<input id="mail-content" />
+      </label>
+    </div>
+    <input type="submit" id="mail-submit" text="提交" />
+  </form>
+  <script>
+    const oForm = document.querySelector('form');
+    const oAccountInput = document.getElementById('mail-account');
+    const oSubjectInput = document.getElementById('mail-subject');
+    const oContentInput = document.getElementById('mail-content');
+    const oSubmitBtn = document.getElementById('mail-submit');
+
+    oSubmitBtn.addEventListener('click', () => {
+      const mailAccount = oAccountInput.value?.trim();
+      const subject = oSubjectInput.value ?? '';
+      const content = oContentInput.value ?? '';
+      if (!mailAccount || !subject) {
+        alert('请填写必要的信息！')
+        return;
+      }
+
+      fetch('http://localhost:3000/send', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          to: mailAccount,
+          subject: subject,
+          content: content
+        })
+      }).then(res => res.json()).then(data => {
+        const { status, msg } = data;
+        if (status === 200) {
+          alert('发送成功！');
+        } else {
+          alert(msg);
+        }
+      }).catch(e => {
+        console.log(e)
+        alert('服务器异常！');
+      });
+    })
+  </script>
+</body>
+</html>
