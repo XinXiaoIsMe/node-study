@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   proxy: {
     '/api': {
       target: 'http://localhost:8080',

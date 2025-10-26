@@ -1,4 +1,4 @@
-const http = require('node:http');
+import http from 'node:http';
 
 const server = http.createServer((req, res) => {
   res.setHeader('Content-type', 'application/json');
