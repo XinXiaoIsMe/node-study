@@ -82,7 +82,7 @@ const filePath = path.resolve(__dirname, './book.txt')
 //   console.log('写入完成')
 // })
 
-// 硬链接 类似js中的引用，删掉源文件，对硬链接没有影响
+// 硬链接 类似js中的引用，指向源文件内存地址，删掉源文件，对硬链接没有影响
 // fs.linkSync(path.resolve(__dirname, 'book.txt'), path.resolve(__dirname, 'book2.txt'))
-// 软链接 类似快捷方式，删掉源文件，软链接会被破坏。生成软链接需要管理员权限
+// 软链接 类似快捷方式，指向源文件路径，删掉源文件后，软链接记录的源文件路径会失效，软链接会被破坏。生成软链接需要管理员权限
 // fs.symlinkSync(path.resolve(__dirname, 'book.txt'), path.resolve(__dirname, 'book3.txt'))
