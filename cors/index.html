@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        // 测试跨域：不同域名和端口
+        fetch('http://localhost:3000/data').then(res => res.json()).then(data => console.log(data));
+
+        // 测试跨域：新增了额外的请求头
+        fetch('http://localhost:3000/getUserInfo', {
+            headers: {
+                Auth: '123'
+            }
+        }).then(res => res.json()).then(data => console.log(data));
+
+        // 测试跨域：测试非简单请求
+        fetch('http://localhost:3000/setUsername', {
+            method: 'PUT',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: 1,
+                name: '李四'
+            })
+        }).then(res => {
+            console.log(res.headers.get('user-id'))
+            return res.json();
+        }).then(data => console.log(data));
+
+        // 测试跨域：测试Content-Type不为application/x-www-form-urlencoded | multipart/form-data | text/plain的情况
+        fetch('http://localhost:3000/data', {
+            headers: {
+                'content-type': 'application/json'
+            }
+        }).then(res => res.json()).then(data => console.log(data));
+
+        // 接收sse接口数据
+        const sse = new EventSource('http://localhost:3000/sse');
+        // 监听test事件
+        sse.addEventListener('test', (event) => {
+            console.log(event.type, event.data);
+        });
+        // 监听默认的message事件
+        sse.addEventListener('message', (event) => {
+            console.log(event.type, event.data);
+        });
+        // 监听error事件
+        sse.addEventListener('error', err => {
+            console.log('error', err);
+        });
+    </script>
+</body>
+</html>
