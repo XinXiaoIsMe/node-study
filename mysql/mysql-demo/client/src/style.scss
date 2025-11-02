@@ -1,0 +1,35 @@
+$font-stack: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont,
+  'Helvetica Neue', Helvetica, Arial, sans-serif;
+$primary-text: #1a2740;
+$page-background: #eef3fb;
+
+:root {
+  font-family: $font-stack;
+  line-height: 1.5;
+  font-weight: 400;
+  color: $primary-text;
+  background-color: $page-background;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  a {
+    color: inherit;
+  }
+}
+
+#app {
+  height: 100vh;
+}
