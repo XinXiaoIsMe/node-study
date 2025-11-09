@@ -4,7 +4,9 @@ import {
   CircleCheckFilled,
   EditPen,
   List,
+  Plus,
   SwitchButton,
+  User,
   UserFilled,
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
@@ -14,16 +16,26 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import http from '../services/http'
 
-interface MenuItem {
+interface BaseMenuItem {
   label: string
-  path: string
   icon: Component
 }
+
+interface MenuLinkItem extends BaseMenuItem {
+  path: string
+}
+
+interface MenuGroupItem extends BaseMenuItem {
+  children: MenuLinkItem[]
+}
+
+type MenuItem = MenuLinkItem | MenuGroupItem
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const logoutLoading = ref(false)
+const API_BASE = (http.defaults.baseURL ?? '').replace(/\/$/, '')
 
 const menuItems = computed<MenuItem[]>(() => {
   const items: MenuItem[] = [
@@ -36,8 +48,11 @@ const menuItems = computed<MenuItem[]>(() => {
   if (auth.isAdmin.value) {
     items.push({
       label: '用户管理',
-      path: '/users',
       icon: UserFilled,
+      children: [
+        { label: '新建用户', path: '/users', icon: Plus },
+        { label: '我的账号', path: '/users/account', icon: User },
+      ],
     })
   }
 
@@ -45,6 +60,9 @@ const menuItems = computed<MenuItem[]>(() => {
 })
 
 const activePath = computed(() => route.path)
+
+const isChildActive = (item: MenuGroupItem) =>
+  item.children.some((child) => child.path === activePath.value)
 
 const handleSelect = async (path: string) => {
   if (path === route.path) {
@@ -56,6 +74,24 @@ const handleSelect = async (path: string) => {
 const displayName = computed(
   () => auth.state.user?.nickname || auth.state.user?.username || '游客',
 )
+
+const avatarUrl = computed(() => {
+  const version = auth.state.user?.avatarUpdatedAt
+  const token = auth.state.token
+  if (!version || !token) {
+    return null
+  }
+  const params = new URLSearchParams({
+    ts: version,
+    token,
+  })
+  return `${API_BASE}/users/me/avatar?${params.toString()}`
+})
+
+const displayInitial = computed(() => {
+  const name = displayName.value || ''
+  return name.charAt(0) || '访'
+})
 
 const handleLogout = async () => {
   if (!auth.state.token) {
@@ -88,22 +124,47 @@ const handleLogout = async () => {
         mode="horizontal"
         :default-active="activePath"
         background-color="transparent"
-        text-color="#ffffff"
         active-text-color="#ffd04b"
         @select="handleSelect"
       >
+      <template v-for="item in menuItems" :key="item.label">
+        <el-sub-menu
+          v-if="'children' in item"
+          :index="item.label"
+          :class="{ 'is-submenu-active': isChildActive(item) }"
+          popper-class="app-layout__submenu-popper"
+        >
+          <template #title>
+            <el-icon><component :is="item.icon" /></el-icon>
+            <span>{{ item.label }}</span>
+          </template>
+          <el-menu-item
+            v-for="child in item.children"
+            :key="child.path"
+            :index="child.path"
+          >
+            <el-icon><component :is="child.icon" /></el-icon>
+            <span>{{ child.label }}</span>
+          </el-menu-item>
+        </el-sub-menu>
         <el-menu-item
-          v-for="item in menuItems"
-          :key="item.path"
+          v-else
           :index="item.path"
         >
           <el-icon><component :is="item.icon" /></el-icon>
           <span>{{ item.label }}</span>
         </el-menu-item>
+      </template>
       </el-menu>
       <div class="app-layout__actions">
         <div class="app-layout__user">
-          <span class="app-layout__user-label">当前用户</span>
+          <el-avatar
+            class="app-layout__avatar"
+            :size="36"
+            :src="avatarUrl || undefined"
+          >
+            {{ displayInitial }}
+          </el-avatar>
           <strong>{{ displayName }}</strong>
           <el-tag
             v-if="auth.state.user"
@@ -138,12 +199,22 @@ const handleLogout = async () => {
 </template>
 
 <style lang="scss" scoped>
+:global(:root) {
+  --app-brand-gradient: linear-gradient(135deg, #4f6cff, #6b8bff);
+  --app-brand-shadow: 0 8px 20px rgba(79, 108, 255, 0.35);
+  --app-menu-text-color: #ffffff;
+  --app-menu-active-color: #ffd04b;
+  --app-submenu-text-color: #303133;
+  --app-submenu-active-color: #4f6cff;
+  --app-layout-bg: radial-gradient(circle at top, #f7faff 0%, #eef3ff 100%);
+}
+
 .app-layout {
   height: 100vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: radial-gradient(circle at top, #f7faff 0%, #eef3ff 100%);
+  background: var(--app-layout-bg);
 }
 
 .app-layout__header {
@@ -151,9 +222,9 @@ const handleLogout = async () => {
   align-items: center;
   gap: 24px;
   padding: 0 32px;
-  background: linear-gradient(135deg, #4f6cff, #6b8bff);
-  color: #ffffff;
-  box-shadow: 0 8px 20px rgba(79, 108, 255, 0.35);
+  background: var(--app-brand-gradient);
+  color: var(--app-menu-text-color);
+  box-shadow: var(--app-brand-shadow);
   flex-shrink: 0;
 }
 
@@ -172,6 +243,73 @@ const handleLogout = async () => {
     font-size: 15px;
     gap: 6px;
   }
+
+  :deep(> .el-menu-item),
+  :deep(> .el-sub-menu > .el-sub-menu__title) {
+    color: var(--app-menu-text-color);
+  }
+
+  :deep(> .el-menu-item .el-icon),
+  :deep(> .el-sub-menu > .el-sub-menu__title .el-icon) {
+    color: var(--app-menu-text-color);
+  }
+
+  :deep(> .el-menu-item.is-active),
+  :deep(> .el-menu-item.is-active .el-icon) {
+    color: var(--app-menu-active-color);
+  }
+
+  :deep(> .el-sub-menu.is-submenu-active > .el-sub-menu__title .el-icon) {
+    color: var(--app-menu-active-color);
+  }
+
+  :deep(.is-submenu-active > .el-sub-menu__title) {
+    color: var(--app-menu-active-color) !important;
+    font-weight: 600;
+  }
+
+  :deep(.is-submenu-active > .el-sub-menu__title .el-icon) {
+    color: var(--app-menu-active-color) !important;
+  }
+}
+
+:global(.app-layout__submenu-popper .el-menu-item) {
+  color: var(--app-submenu-text-color) !important;
+}
+
+:global(.app-layout__submenu-popper .el-sub-menu__title) {
+  color: var(--app-submenu-text-color) !important;
+}
+
+:global(.app-layout__submenu-popper .el-icon) {
+  color: var(--app-submenu-text-color) !important;
+}
+
+:global(.app-layout__submenu-popper .el-menu-item.is-active),
+:global(.app-layout__submenu-popper .el-menu-item:hover),
+:global(.app-layout__submenu-popper .el-sub-menu__title.is-active),
+:global(.app-layout__submenu-popper .el-sub-menu__title:hover) {
+  color: var(--app-submenu-active-color) !important;
+}
+
+:global(.app-layout__submenu-popper .el-menu-item.is-active .el-icon),
+:global(.app-layout__submenu-popper .el-menu-item:hover .el-icon),
+:global(.app-layout__submenu-popper .el-sub-menu__title.is-active .el-icon),
+:global(.app-layout__submenu-popper .el-sub-menu__title:hover .el-icon) {
+  color: var(--app-submenu-active-color) !important;
+}
+
+:global(.app-layout__submenu-popper .el-menu) {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  --el-menu-border-color: transparent;
+}
+
+:global(.app-layout__submenu-popper .el-menu--popup) {
+  box-shadow: none !important;
+  border: none !important;
+  outline: none !important;
 }
 
 .app-layout__user {
@@ -180,15 +318,16 @@ const handleLogout = async () => {
   gap: 12px;
   font-size: 14px;
 }
+.app-layout__avatar {
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--app-menu-text-color);
+  font-weight: 600;
+}
 
 .app-layout__actions {
   display: flex;
   align-items: center;
   gap: 16px;
-}
-
-.app-layout__user-label {
-  opacity: 0.85;
 }
 
 .app-layout__main {
@@ -201,11 +340,11 @@ const handleLogout = async () => {
 }
 
 .app-layout__logout {
-  color: #ffffff;
+  color: var(--app-menu-text-color);
   font-size: 18px;
 
   &:hover {
-    color: #ffd04b;
+    color: var(--app-menu-active-color);
   }
 }
 

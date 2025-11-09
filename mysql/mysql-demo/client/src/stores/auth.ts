@@ -6,6 +6,9 @@ export interface UserProfile {
   id: number
   username: string
   nickname: string | null
+  gender: number | null
+  selfIntro: string | null
+  avatarUpdatedAt: string | null
   role: Role
 }
 
@@ -70,6 +73,18 @@ const setAuth = (payload: { user: UserProfile; token: string }) => {
   persistToStorage()
 }
 
+const updateUser = (partial: Partial<UserProfile>) => {
+  loadFromStorage()
+  if (!state.user) {
+    return
+  }
+  state.user = {
+    ...state.user,
+    ...partial,
+  }
+  persistToStorage()
+}
+
 const clearAuth = () => {
   loadFromStorage()
   state.user = null
@@ -85,6 +100,7 @@ export const useAuthStore = () => {
     state: readonly(state),
     isAdmin,
     setAuth,
+    updateUser,
     clearAuth,
   }
 }

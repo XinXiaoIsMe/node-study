@@ -9,6 +9,16 @@ export const createSession = (data: Omit<SessionData, 'lastSeen'>): string => {
   return token
 }
 
+export const updateSession = (token: string, data: Partial<Omit<SessionData, 'userId' | 'lastSeen'>>) => {
+  const session = sessions.get(token)
+  if (!session) {
+    return null
+  }
+  Object.assign(session, data)
+  session.lastSeen = Date.now()
+  return session
+}
+
 export const getSession = (token: string) => {
   const session = sessions.get(token)
   if (!session) {

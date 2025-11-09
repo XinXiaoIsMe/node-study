@@ -1,10 +1,24 @@
 import type { NextFunction, Request, Response } from 'express'
 import { getSession } from '../models/sessionStore'
 
+const pickToken = (value: unknown): string | null => {
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    return trimmed ? trimmed : null
+  }
+  if (Array.isArray(value)) {
+    return pickToken(value.find((item) => typeof item === 'string'))
+  }
+  return null
+}
+
 const extractToken = (req: Request): string | null => {
   const authHeader = req.header('Authorization') ?? ''
   if (!authHeader.startsWith('Bearer ')) {
-    return null
+    const queryToken =
+      pickToken((req.query as Record<string, unknown>).token) ??
+      pickToken((req.query as Record<string, unknown>).access_token)
+    return queryToken
   }
   const token = authHeader.slice(7).trim()
   return token || null
