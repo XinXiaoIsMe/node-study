@@ -16,7 +16,8 @@ export const listTasks = async (req: Request, res: Response) => {
   }
 
   try {
-    const tasks = await listTasksByUser(req.session.userId)
+    const status = req.query?.status as TaskStatus;
+    const tasks = await listTasksByUser(req.session.userId, status)
     res.json({ tasks })
   } catch (error) {
     console.error('List tasks failed:', error)

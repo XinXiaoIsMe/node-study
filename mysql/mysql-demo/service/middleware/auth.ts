@@ -14,6 +14,7 @@ const pickToken = (value: unknown): string | null => {
 
 const extractToken = (req: Request): string | null => {
   const authHeader = req.header('Authorization') ?? ''
+  // 如果没有合法token，则从query中查看是否有token
   if (!authHeader.startsWith('Bearer ')) {
     const queryToken =
       pickToken((req.query as Record<string, unknown>).token) ??
