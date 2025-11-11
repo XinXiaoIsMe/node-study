@@ -43,10 +43,16 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true },
       component: () => import('../views/UserManagementView.vue'),
     },
+    {
+      path: '/users/account',
+      name: 'user-account',
+      meta: { requiresAuth: true },
+      component: () => import('../views/MyAccountView.vue'),
+    },
   ],
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const auth = useAuthStore()
   const requiresAuth = Boolean(to.meta.requiresAuth)
   const requiresAdmin = Boolean(to.meta.requiresAdmin)

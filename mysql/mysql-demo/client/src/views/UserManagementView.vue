@@ -3,11 +3,12 @@ import { Hide, View } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormItemRule, FormRules } from 'element-plus'
 import { isAxiosError } from 'axios'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { type Role, useAuthStore } from '../stores/auth'
 import http from '../services/http'
 import AppLayout from '../components/AppLayout.vue'
+import AvatarCropperDialog from '../components/AvatarCropperDialog.vue'
 
 interface CreateUserForm {
   username: string
@@ -44,6 +45,40 @@ const formRef = ref<FormInstance>()
 const loading = ref(false)
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
+const avatarCropperVisible = ref(false)
+const avatarCropperSource = ref<string | null>(null)
+const avatarPreviewUrl = ref<string | null>(null)
+const avatarDataUrl = ref<string | null>(null)
+const avatarFileInputRef = ref<HTMLInputElement>()
+
+const cleanupAvatarSource = () => {
+  if (avatarCropperSource.value) {
+    URL.revokeObjectURL(avatarCropperSource.value)
+    avatarCropperSource.value = null
+  }
+}
+
+const resetAvatarState = () => {
+  if (avatarPreviewUrl.value) {
+    URL.revokeObjectURL(avatarPreviewUrl.value)
+  }
+  avatarPreviewUrl.value = null
+  avatarDataUrl.value = null
+}
+
+onBeforeUnmount(() => {
+  cleanupAvatarSource()
+  resetAvatarState()
+})
+
+watch(avatarCropperVisible, (visible) => {
+  if (!visible) {
+    cleanupAvatarSource()
+    if (avatarFileInputRef.value) {
+      avatarFileInputRef.value.value = ''
+    }
+  }
+})
 
 const validateConfirmPassword: NonNullable<FormItemRule['validator']> = (
   _rule,
@@ -97,6 +132,7 @@ const resetForm = () => {
   createForm.confirmPassword = ''
   createForm.nickname = ''
   createForm.role = 'user'
+  resetAvatarState()
 }
 
 const redirectToLogin = () => {
@@ -110,6 +146,64 @@ const ensureToken = () => {
     return false
   }
   return true
+}
+
+const handleAvatarClick = () => {
+  if (loading.value) {
+    return
+  }
+  avatarFileInputRef.value?.click()
+}
+
+const handleAvatarFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) {
+    return
+  }
+
+  if (!file.type.startsWith('image/')) {
+    ElMessage.error('请选择图片文件')
+    target.value = ''
+    return
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    ElMessage.error('图片大小请控制在 2MB 以内')
+    target.value = ''
+    return
+  }
+
+  cleanupAvatarSource()
+  avatarCropperSource.value = URL.createObjectURL(file)
+  avatarCropperVisible.value = true
+}
+
+const blobToDataUrl = (blob: Blob) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result))
+    reader.onerror = () => reject(reader.error || new Error('读取文件失败'))
+    reader.readAsDataURL(blob)
+  })
+
+const handleAvatarConfirm = async ({ blob, previewUrl }: { blob: Blob; previewUrl: string }) => {
+  avatarCropperVisible.value = false
+  if (blob.size > 2 * 1024 * 1024) {
+    URL.revokeObjectURL(previewUrl)
+    ElMessage.error('头像大小请控制在 2MB 以内')
+    return
+  }
+  try {
+    const dataUrl = await blobToDataUrl(blob)
+    resetAvatarState()
+    avatarPreviewUrl.value = previewUrl
+    avatarDataUrl.value = dataUrl
+  } catch (error) {
+    URL.revokeObjectURL(previewUrl)
+    console.error('convert avatar failed', error)
+    ElMessage.error('头像处理失败，请重试')
+  }
 }
 
 const handleCreateUser = async () => {
@@ -135,6 +229,7 @@ const handleCreateUser = async () => {
       password: createForm.password,
       nickname: createForm.nickname || null,
       role: createForm.role,
+      avatar: avatarDataUrl.value,
     })
 
     ElMessage.success(
@@ -206,6 +301,33 @@ watch(
             {{ auth.state.user?.username }}
           </el-descriptions-item>
         </el-descriptions>
+
+        <div class="users-avatar">
+          <div
+            class="users-avatar__preview"
+            @click="handleAvatarClick"
+          >
+            <el-avatar
+              :size="96"
+              :src="avatarPreviewUrl || undefined"
+            >
+              {{ createForm.nickname || createForm.username || '新' }}
+            </el-avatar>
+            <div class="users-avatar__overlay">
+              <span>{{ avatarPreviewUrl ? '点击更换头像' : '点击上传头像' }}</span>
+            </div>
+          </div>
+          <input
+            ref="avatarFileInputRef"
+            class="sr-only"
+            type="file"
+            accept="image/*"
+            @change="handleAvatarFileChange"
+          />
+          <el-text class="users-avatar__tips" type="info">
+            头像可选，支持 JPG/PNG，文件大小建议小于 2MB。
+          </el-text>
+        </div>
 
         <el-form
           ref="formRef"
@@ -317,6 +439,12 @@ watch(
         </el-form>
       </el-card>
     </div>
+    <AvatarCropperDialog
+      v-model="avatarCropperVisible"
+      :image-url="avatarCropperSource"
+      title="裁剪头像"
+      @confirm="handleAvatarConfirm"
+    />
   </AppLayout>
 </template>
 
@@ -358,6 +486,48 @@ watch(
   margin-bottom: 24px;
 }
 
+.users-avatar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.users-avatar__preview {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(79, 108, 255, 0.25);
+  cursor: pointer;
+
+  &:hover .users-avatar__overlay {
+    opacity: 1;
+  }
+}
+
+.users-avatar__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(31, 46, 85, 0.55);
+  color: #ffffff;
+  font-size: 12px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  padding: 0 8px;
+}
+
+.users-avatar__tips {
+  font-size: 12px;
+  color: #7b869d;
+}
+
 .password-toggle {
   cursor: pointer;
   display: inline-flex;
@@ -370,6 +540,17 @@ watch(
     outline: 2px solid #3e7bfa;
     border-radius: 50%;
   }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 
 @media (max-width: 640px) {

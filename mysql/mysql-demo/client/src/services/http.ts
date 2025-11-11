@@ -22,7 +22,11 @@ http.interceptors.request.use((config) => {
     headers.Authorization = `Bearer ${auth.state.token}`
   }
 
-  if (
+  const isFormData = typeof FormData !== 'undefined' && config.data instanceof FormData
+
+  if (isFormData) {
+    delete headers['Content-Type']
+  } else if (
     config.method &&
     config.method.toUpperCase() !== 'GET' &&
     !headers['Content-Type']

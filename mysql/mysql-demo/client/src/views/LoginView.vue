@@ -81,12 +81,26 @@ const handleSubmit = async () => {
     const userId =
       payload.user.id !== undefined ? Number(payload.user.id) : 0
 
+    const normalizedGender =
+      typeof payload.user.gender === 'number' && payload.user.gender > 0
+        ? payload.user.gender
+        : null
+
     const user: UserProfile = {
       id: Number.isNaN(userId) ? 0 : userId,
       username: String(payload.user.username),
       nickname:
         payload.user.nickname !== undefined
           ? (payload.user.nickname as string | null)
+          : null,
+      gender: normalizedGender,
+      selfIntro:
+        payload.user.selfIntro !== undefined
+          ? (payload.user.selfIntro as string | null)
+          : null,
+      avatarUpdatedAt:
+        payload.user.avatarUpdatedAt !== undefined
+          ? (payload.user.avatarUpdatedAt as string | null)
           : null,
       role: normalizeRole(payload.user.role as Role | undefined),
     }

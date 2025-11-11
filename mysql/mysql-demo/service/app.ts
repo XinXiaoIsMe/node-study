@@ -9,7 +9,9 @@ import { pool } from './database'
 const app = express()
 
 app.use(express.json())
+// 处理跨域
 app.use(corsMiddleware)
+// 在req上绑定session信息
 app.use(attachSession)
 
 app.use('/api', authRoutes)

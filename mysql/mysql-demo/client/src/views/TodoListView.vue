@@ -190,7 +190,7 @@ onMounted(() => {
           <el-table-column prop="priority" label="优先级" width="120">
             <template #default="{ row }">
               <el-tag :type="row.priority === 'high' ? 'danger' : row.priority === 'medium' ? 'warning' : 'info'">
-                {{ priorityLabel[row.priority] }}
+                {{ priorityLabel[row.priority as keyof typeof priorityLabel] }}
               </el-tag>
             </template>
           </el-table-column>

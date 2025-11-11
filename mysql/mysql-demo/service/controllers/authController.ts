@@ -10,6 +10,11 @@ interface UserRow extends RowDataPacket {
   nickname: string | null
   password: string
   role: Role
+  gender: number | null
+  self_intro: string | null
+  avatar_size: number | null
+  avatar_mime: string | null
+  update_time: Date | null
 }
 
 export const login = async (req: Request, res: Response) => {
@@ -22,7 +27,20 @@ export const login = async (req: Request, res: Response) => {
 
   try {
     const [rows] = await pool.execute<UserRow[]>(
-      'SELECT id, username, nickname, password, role FROM users WHERE username = ? LIMIT 1',
+      `SELECT
+         id,
+         username,
+         nickname,
+         password,
+         role,
+         gender,
+         self_intro,
+         avatar_size,
+         avatar_mime,
+         update_time
+       FROM users
+       WHERE username = ?
+       LIMIT 1`,
       [username],
     )
 
@@ -34,10 +52,20 @@ export const login = async (req: Request, res: Response) => {
     const user = rows[0]
     deleteSessionsByUser(user.id)
 
+    const avatarUpdatedAt =
+      user.avatar_size && user.update_time
+        ? new Date(user.update_time).toISOString()
+        : null
+    const normalizedGender =
+      user.gender && user.gender > 0 ? user.gender : null
+
     const token = createSession({
       userId: user.id,
       username: user.username,
       nickname: user.nickname,
+      gender: normalizedGender,
+      selfIntro: user.self_intro ?? null,
+      avatarUpdatedAt,
       role: user.role === 'admin' ? 'admin' : 'user',
     })
 
@@ -47,6 +75,9 @@ export const login = async (req: Request, res: Response) => {
         id: user.id,
         username: user.username,
         nickname: user.nickname,
+        gender: normalizedGender,
+        selfIntro: user.self_intro ?? null,
+        avatarUpdatedAt,
         role: user.role === 'admin' ? 'admin' : 'user',
       },
       token,

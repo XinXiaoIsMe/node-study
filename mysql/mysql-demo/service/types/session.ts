@@ -4,6 +4,9 @@ export interface SessionData {
   userId: number
   username: string
   nickname: string | null
+  gender: number | null
+  selfIntro: string | null
+  avatarUpdatedAt: string | null
   role: Role
   lastSeen: number
 }
