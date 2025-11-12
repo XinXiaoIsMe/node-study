@@ -5,7 +5,7 @@ import yaml from 'js-yaml'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const CONFIG_PATH = path.resolve(__dirname, '../db.config.yaml')
+const CONFIG_PATH = path.resolve(__dirname, './db.config.yaml')
 
 export interface DbConfig {
   host: string
@@ -29,3 +29,13 @@ const loadConfig = (): AppConfig => {
 }
 
 export const appConfig = loadConfig()
+
+// Base MySQL server connection options without selecting a database
+export const dbServerConfig = {
+  host: appConfig.db.host,
+  port: appConfig.db.port,
+  user: appConfig.db.user,
+  password: appConfig.db.password,
+}
+
+export const dbName = appConfig.db.database

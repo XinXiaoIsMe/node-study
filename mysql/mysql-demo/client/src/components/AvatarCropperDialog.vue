@@ -39,7 +39,7 @@ const dragStart = reactive({ x: 0, y: 0 })
 const offsetStart = reactive({ x: 0, y: 0 })
 const pointerId = ref<number | null>(null)
 const loading = ref(false)
-const cropSize = 320
+const cropSize = ref(320)
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value))
@@ -51,21 +51,30 @@ const resetState = () => {
   offset.y = 0
 }
 
+// Measure current crop stage size for precise math
+const measureCropSize = () => {
+  const el = stageRef.value
+  if (!el) return
+  const width = Math.max(1, Math.round(el.clientWidth))
+  cropSize.value = width
+}
+
 const baseScale = computed(() => {
   const { width, height } = naturalSize
   if (!width || !height) {
     return 1
   }
-  return Math.max(cropSize / width, cropSize / height)
+  return Math.max(cropSize.value / width, cropSize.value / height)
 })
 
 const displayScale = computed(() => baseScale.value * scale.value)
 
 const imageTransform = computed(() => {
+  const center = 'translate(-50%, -50%)'
   const translate = `translate(${offset.x}px, ${offset.y}px)`
   const rotate = `rotate(${rotation.value}deg)`
   const scaleValue = `scale(${displayScale.value})`
-  return `${translate} ${rotate} ${scaleValue}`
+  return `${center} ${translate} ${rotate} ${scaleValue}`
 })
 
 const handleImageLoad = () => {
@@ -74,6 +83,7 @@ const handleImageLoad = () => {
   naturalSize.width = img.naturalWidth || 1
   naturalSize.height = img.naturalHeight || 1
   resetState()
+  measureCropSize()
 }
 
 const disposeDragging = (event: PointerEvent) => {
@@ -153,15 +163,19 @@ watch(
     if (value) {
       nextTick(() => {
         resetState()
+        measureCropSize()
+        window.addEventListener('resize', measureCropSize)
       })
     } else {
       resetState()
+      window.removeEventListener('resize', measureCropSize)
     }
   },
 )
 
 onBeforeUnmount(() => {
   resetState()
+  window.removeEventListener('resize', measureCropSize)
 })
 
 const handleConfirm = async () => {
@@ -181,10 +195,10 @@ const handleConfirm = async () => {
       throw new Error('无法获取画布上下文')
     }
 
-    const offsetScale = canvasSize / cropSize
+    const offsetScale = canvasSize / cropSize.value
     const translateX = offset.x * offsetScale
     const translateY = offset.y * offsetScale
-    const actualScale = displayScale.value * (canvasSize / cropSize)
+    const actualScale = displayScale.value * (canvasSize / cropSize.value)
     const rotationRad = (rotation.value * Math.PI) / 180
 
     ctx.save()
@@ -301,7 +315,7 @@ const handleConfirm = async () => {
   position: relative;
   width: 320px;
   height: 320px;
-  border-radius: 50%;
+  border-radius: 8px;
   overflow: hidden;
   background: radial-gradient(circle at center, rgba(255, 255, 255, 0.12), rgba(31, 46, 85, 0.65));
   cursor: grab;
@@ -331,7 +345,7 @@ const handleConfirm = async () => {
   inset: 0;
   pointer-events: none;
   box-shadow: 0 0 0 999px rgba(17, 26, 45, 0.45);
-  border-radius: 50%;
+  border-radius: 8px;
 }
 
 .cropper__controls {

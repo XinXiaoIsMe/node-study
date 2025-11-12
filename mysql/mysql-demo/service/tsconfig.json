@@ -9,5 +9,5 @@
     "skipLibCheck": true,
     "outDir": "dist"
   },
-  "include": ["service/**/*.ts", "service/**/*.d.ts"]
+  "include": ["**/*.ts", "**/*.d.ts"]
 }

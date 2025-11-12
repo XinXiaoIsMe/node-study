@@ -1,4 +1,6 @@
 import { pool } from '../database'
+import mysql from 'mysql2/promise'
+import { appConfig, dbServerConfig } from '../config'
 import { ensureAdminAccount } from './userModel'
 
 export const ensureUsersTable = async () => {
@@ -75,7 +77,21 @@ export const ensureTasksTable = async () => {
 }
 
 export const initializeDatabase = async () => {
+  // Ensure the target database exists before using the pool
+  await ensureDatabaseExists()
   await ensureUsersTable()
   await ensureTasksTable()
   await ensureAdminAccount()
+}
+
+const ensureDatabaseExists = async () => {
+  const connection = await mysql.createConnection(dbServerConfig)
+  try {
+    const db = appConfig.db.database
+    await connection.query(
+      `CREATE DATABASE IF NOT EXISTS \`${db}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci`,
+    )
+  } finally {
+    await connection.end()
+  }
 }
