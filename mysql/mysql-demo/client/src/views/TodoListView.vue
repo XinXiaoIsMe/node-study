@@ -43,7 +43,11 @@ const priorityLabel: Record<Task['priority'], string> = {
 const fetchTasks = async () => {
   loading.value = true
   try {
-    const { data } = await http.get<{ tasks: Task[] }>('/tasks')
+    const { data } = await http.get<{ tasks: Task[] }>('/tasks', {
+      params: {
+        status: 'pending'
+      }
+    })
     tasks.value = data.tasks
   } catch (error) {
     console.error('fetch tasks failed', error)
@@ -68,6 +72,7 @@ const handleStatusToggle = async (task: Task) => {
   try {
     await http.patch(`/tasks/${task.id}/status`, { status: nextStatus })
     task.status = nextStatus
+    fetchTasks()
     ElMessage.success('任务状态已更新')
   } catch (error) {
     console.error('update task status failed', error)

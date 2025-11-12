@@ -44,13 +44,13 @@ export const createTask = async (task: {
   return result.insertId
 }
 
-export const listTasksByUser = async (userId: number): Promise<TaskRecord[]> => {
+export const listTasksByUser = async (userId: number, status?: TaskStatus): Promise<TaskRecord[]> => {
   const [rows] = await pool.execute<TaskRow[]>(
     `SELECT id, title, description, due_date, priority, status, created_by, create_time, update_time
      FROM tasks
-     WHERE created_by = ?
+     WHERE created_by = ? ${status ? 'AND status = ?' : ''}
      ORDER BY status ASC, due_date IS NULL, due_date ASC, create_time DESC`,
-    [userId],
+    status ? [userId, status] : [userId],
   )
 
   return rows.map((row) => ({
