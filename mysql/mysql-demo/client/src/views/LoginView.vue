@@ -114,7 +114,7 @@ const handleSubmit = async () => {
     const redirectTarget =
       typeof route.query.redirect === 'string' && route.query.redirect
         ? route.query.redirect
-        : '/todos'
+        : '/calendar'
     await router.push(redirectTarget)
   } catch (error) {
     console.error('login request failed', error)

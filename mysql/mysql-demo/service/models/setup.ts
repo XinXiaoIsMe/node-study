@@ -61,6 +61,7 @@ export const ensureTasksTable = async () => {
         id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT COMMENT '任务ID',
         title VARCHAR(120) NOT NULL COMMENT '任务标题',
         description TEXT COMMENT '任务描述',
+        start_date DATETIME NULL COMMENT '开始时间',
         due_date DATETIME NULL COMMENT '截止时间',
         priority ENUM('low','medium','high') NOT NULL DEFAULT 'medium' COMMENT '优先级',
         status ENUM('pending','completed') NOT NULL DEFAULT 'pending' COMMENT '状态',
@@ -71,6 +72,19 @@ export const ensureTasksTable = async () => {
         INDEX idx_tasks_status (status)
       )
     `)
+
+    // Migration: add start_date if table already exists without it
+    try {
+      await connection.query(
+        "ALTER TABLE tasks ADD COLUMN start_date DATETIME NULL COMMENT '开始时间' AFTER description",
+      )
+    } catch (error) {
+      const err = error as { code?: string }
+      if (err.code !== 'ER_DUP_FIELDNAME') {
+        // rethrow unexpected migration errors
+        throw error
+      }
+    }
   } finally {
     connection.release()
   }

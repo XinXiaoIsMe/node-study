@@ -58,7 +58,7 @@ router.beforeEach((to, _from, next) => {
   const requiresAdmin = Boolean(to.meta.requiresAdmin)
 
   if (to.name === 'login' && auth.state.user) {
-    next({ path: auth.isAdmin.value ? '/users' : '/todos' })
+    next({ path: '/calendar' })
     return
   }
 
@@ -75,7 +75,7 @@ router.beforeEach((to, _from, next) => {
   }
 
   if (requiresAdmin && !auth.isAdmin.value) {
-    next({ path: '/todos' })
+    next({ path: '/calendar' })
     return
   }
 

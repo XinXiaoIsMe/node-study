@@ -10,6 +10,7 @@ import http from '../services/http'
 interface TaskForm {
   title: string
   description: string
+  startDate: string | null
   dueDate: string | null
   priority: 'low' | 'medium' | 'high'
 }
@@ -18,9 +19,11 @@ const router = useRouter()
 
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
+import { formatDateTime } from '../utils/datetime'
 const form = reactive<TaskForm>({
   title: '',
   description: '',
+  startDate: formatDateTime(new Date()),
   dueDate: null,
   priority: 'medium',
 })
@@ -33,6 +36,7 @@ const resetForm = () => {
   formRef.value?.resetFields()
   form.title = ''
   form.description = ''
+  form.startDate = formatDateTime(new Date())
   form.dueDate = null
   form.priority = 'medium'
 }
@@ -52,6 +56,7 @@ const handleSubmit = async () => {
     await http.post('/tasks', {
       title: form.title,
       description: form.description || '',
+      startDate: form.startDate,
       dueDate: form.dueDate,
       priority: form.priority,
     })
@@ -103,12 +108,13 @@ const handleSubmit = async () => {
             />
           </el-form-item>
 
-          <el-form-item label="任务描述" prop="description">
-            <el-input
-              v-model="form.description"
-              type="textarea"
-              :autosize="{ minRows: 4, maxRows: 8 }"
-              placeholder="补充任务详细信息（选填）"
+          <el-form-item label="开始时间" prop="startDate">
+            <el-date-picker
+              v-model="form.startDate"
+              type="datetime"
+              placeholder="选择开始时间（默认当前时间）"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              clearable
             />
           </el-form-item>
 
@@ -127,6 +133,15 @@ const handleSubmit = async () => {
               <el-option label="普通" value="medium" />
               <el-option label="高" value="high" />
             </el-select>
+          </el-form-item>
+
+          <el-form-item label="任务描述" prop="description">
+            <el-input
+              v-model="form.description"
+              type="textarea"
+              :autosize="{ minRows: 4, maxRows: 8 }"
+              placeholder="补充任务详细信息（选填）"
+            />
           </el-form-item>
 
           <el-form-item>

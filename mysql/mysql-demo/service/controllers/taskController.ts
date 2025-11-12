@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
 import {
   createTask,
-  listTasksByUser,
+  listTasks,
   updateTaskStatus,
   updateTaskDetail,
   findTaskByIdForUser,
@@ -9,7 +9,7 @@ import {
   TaskStatus,
 } from '../models/taskModel'
 
-export const listTasks = async (req: Request, res: Response) => {
+export const getTasks = async (req: Request, res: Response) => {
   if (!req.session) {
     res.status(401).json({ message: '未授权' })
     return
@@ -17,7 +17,7 @@ export const listTasks = async (req: Request, res: Response) => {
 
   try {
     const status = req.query?.status as TaskStatus;
-    const tasks = await listTasksByUser(req.session.userId, status)
+    const tasks = await listTasks(req.session.userId, { status })
     res.json({ tasks })
   } catch (error) {
     console.error('List tasks failed:', error)
@@ -26,12 +26,7 @@ export const listTasks = async (req: Request, res: Response) => {
 }
 
 export const createTaskController = async (req: Request, res: Response) => {
-  if (!req.session) {
-    res.status(401).json({ message: '未授权' })
-    return
-  }
-
-  const { title, description = '', dueDate = null, priority = 'medium' } = req.body ?? {}
+  const { title, description = '', startDate = null, dueDate = null, priority = 'medium' } = req.body ?? {}
 
   if (!title || !title.trim()) {
     res.status(400).json({ message: '任务标题不能为空' })
@@ -44,15 +39,18 @@ export const createTaskController = async (req: Request, res: Response) => {
   }
 
   try {
+    const nowIso = new Date().toISOString().slice(0, 19).replace('T', ' ')
+    const normalizedStartDate = startDate && typeof startDate === 'string' && startDate.trim().length > 0 ? startDate : nowIso
     const normalizedDueDate = dueDate && typeof dueDate === 'string' && dueDate.trim().length > 0 ? dueDate : null
     const normalizedPriority = priority as TaskPriority
     const insertId = await createTask({
       title: title.trim(),
       description: description || '',
+      startDate: normalizedStartDate,
       dueDate: normalizedDueDate,
       priority: normalizedPriority,
       status: 'pending',
-      createdBy: req.session.userId,
+      createdBy: req.session!.userId,
     })
 
     res.status(201).json({
@@ -61,10 +59,11 @@ export const createTaskController = async (req: Request, res: Response) => {
         id: insertId,
         title: title.trim(),
         description: description || '',
+        startDate: normalizedStartDate,
         dueDate: normalizedDueDate,
         priority: normalizedPriority,
         status: 'pending',
-        createdBy: req.session.userId,
+        createdBy: req.session!.userId,
       },
     })
   } catch (error) {
@@ -74,11 +73,6 @@ export const createTaskController = async (req: Request, res: Response) => {
 }
 
 export const updateTaskStatusController = async (req: Request, res: Response) => {
-  if (!req.session) {
-    res.status(401).json({ message: '未授权' })
-    return
-  }
-
   const taskId = Number(req.params.taskId)
   const { status } = req.body ?? {}
 
@@ -93,7 +87,7 @@ export const updateTaskStatusController = async (req: Request, res: Response) =>
   }
 
   try {
-    const updated = await updateTaskStatus(taskId, status as TaskStatus, req.session.userId)
+    const updated = await updateTaskStatus(taskId, status as TaskStatus, req.session!.userId)
     if (!updated) {
       res.status(404).json({ message: '任务不存在或无权操作' })
       return
@@ -106,13 +100,8 @@ export const updateTaskStatusController = async (req: Request, res: Response) =>
 }
 
 export const updateTaskDetailController = async (req: Request, res: Response) => {
-  if (!req.session) {
-    res.status(401).json({ message: '未授权' })
-    return
-  }
-
   const taskId = Number(req.params.taskId)
-  const { title, description = '', dueDate = null, priority = 'medium' } = req.body ?? {}
+  const { title, description = '', startDate = null, dueDate = null, priority = 'medium' } = req.body ?? {}
 
   if (!taskId || Number.isNaN(taskId)) {
     res.status(400).json({ message: '任务ID不合法' })
@@ -131,10 +120,12 @@ export const updateTaskDetailController = async (req: Request, res: Response) =>
 
   try {
     const normalizedDueDate = dueDate && typeof dueDate === 'string' && dueDate.trim().length > 0 ? dueDate : null
+    const normalizedStartDate = startDate && typeof startDate === 'string' && startDate.trim().length > 0 ? startDate : null
     const normalizedPriority = priority as TaskPriority
-    const updated = await updateTaskDetail(taskId, req.session.userId, {
+    const updated = await updateTaskDetail(taskId, req.session!.userId, {
       title: title.trim(),
       description: description || '',
+      startDate: normalizedStartDate,
       dueDate: normalizedDueDate,
       priority: normalizedPriority,
     })
@@ -144,10 +135,31 @@ export const updateTaskDetailController = async (req: Request, res: Response) =>
       return
     }
 
-    const task = await findTaskByIdForUser(taskId, req.session.userId)
+    const task = await findTaskByIdForUser(taskId, req.session!.userId)
     res.json({
       message: '任务已更新',
       task,
+    })
+  } catch (error) {
+    console.error('Update task failed:', error)
+    res.status(500).json({ message: '服务器错误，请稍后重试' })
+  }
+}
+
+export const getTasksByRangeController = async (req: Request, res: Response) => {
+  const { startDate, endDate } = req.body
+  const userId = req.session!.userId
+  if (!startDate || !endDate) {
+    res.status(400).json({ message: '开始日期或者结束日期不能为空' })
+    return
+  }
+
+  try {
+    const tasks = await listTasks(userId, {
+      dateRange: [startDate, endDate]
+    })
+    res.json({
+      tasks
     })
   } catch (error) {
     console.error('Update task failed:', error)
