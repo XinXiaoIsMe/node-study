@@ -3,6 +3,7 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { isAxiosError } from 'axios'
 import http from '../services/http'
+import { formatDateTime } from '../utils/datetime'
 
 export type Task = {
   id: number
@@ -47,7 +48,11 @@ export function useTaskList(statusFilter: Task['status']) {
       const { data } = await http.get<{ tasks: Task[] }>('/tasks', {
         params: { status: statusFilter },
       })
-      tasks.value = data.tasks
+      tasks.value = data.tasks.map(item => ({
+        ...item,
+        startDate: formatDateTime(item.startDate),
+        dueDate: formatDateTime(item.dueDate)
+      }))
     } catch (error) {
       console.error('fetch tasks failed', error)
       if (isAxiosError(error)) {
@@ -109,6 +114,8 @@ export function useTaskList(statusFilter: Task['status']) {
     const valid = await editFormRef.value.validate().catch(() => false)
     if (!valid) return
 
+    console.log(editForm, 'form')
+
     try {
       const { data } = await http.put<{ task: Task | null }>(`/tasks/${editForm.id}`, {
         title: editForm.title,
@@ -121,7 +128,14 @@ export function useTaskList(statusFilter: Task['status']) {
       if (data.task) {
         const index = tasks.value.findIndex((t) => t.id === editForm.id)
         if (index !== -1) {
-          tasks.value[index] = { ...tasks.value[index], ...data.task }
+          tasks.value[index] = {
+            ...tasks.value[index],
+            ...{
+              ...data.task,
+              startDate: formatDateTime(data.task.startDate),
+              dueDate: formatDateTime(data.task.dueDate),
+            }
+          }
         }
       } else {
         await fetchTasks()
