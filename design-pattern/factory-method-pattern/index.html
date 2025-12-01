@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>收银程序</title>
+  <style>
+    .cash-platform {
+      width: 500px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 4px;
+    }
+
+    h3 {
+      margin: 0;
+      padding: 0;
+    }
+
+    .cash-form__item {
+      margin-bottom: 10px;
+    }
+
+    .cash-result {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+      background-color: #ddd;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="cash-platform">
+    <h3>收费平台</h3>
+    <form onsubmit="return false;">
+      <div class="cash-form__item">
+        <label>
+          <span>单价：</span>
+          <input value="0" placeholder="请输入商品单价" class="J_productPrice" />
+        </label>
+      </div>
+      <div class="cash-form__item">
+        <label>
+          <span>数量：</span>
+          <input value="0" placeholder="请输入商品数量" class="J_productCount" />
+        </label>
+      </div>
+      <div class="cash-form__item">
+        <label>
+          <span>优惠：</span>
+          <select value="正常收费" class="J_acceptCashType">
+            <option value="正常收费">正常收费</option>
+            <option value="打8折">打8折</option>
+            <option value="满100减10">满100减10</option>
+          </select>
+        </label>
+      </div>
+      <div class="cash-form__item">
+        <button class="J_reset">重置</button>
+        <button class="J_calculate">计算</button>
+      </div>
+    </form>
+    <div class="cash-result J_cashResult">0</div>
+  </div>
+  <script type="module" src="./Cash.js"></script>
+</body>
+</html>
