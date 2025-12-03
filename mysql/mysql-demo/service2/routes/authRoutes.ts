@@ -1,10 +1,9 @@
 import { Router } from "express";
+import { login, logout } from '../controllers/authController';
+import { requireAuth } from '../middleware/auth';
 
 const router = Router();
-router.post('/login', (req, res, next) => {
-    res.json({
-        message: '登录成功！'
-    })
-});
+router.post('/login', login);
+router.post('/logout', requireAuth, logout);
 
 export default router;

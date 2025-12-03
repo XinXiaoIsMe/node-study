@@ -44,6 +44,8 @@ export function corsMiddleware(req: Request, res: Response, next: NextFunction) 
      */
     if (req.method === 'OPTIONS') {
         res.sendStatus(204);
+        // 这里必须要返回，否则预检请求会到下一个中间件，导致报错
+        return;
     }
 
     next();
