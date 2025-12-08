@@ -24,6 +24,31 @@ interface UserProfileRow extends RowDataPacket {
   update_time: Date | null
 }
 
+interface User {
+    id: number
+    username: string
+    nickname: string | null
+    gender: number | null
+    self_intro: string | null
+    role: Role
+    avatar_mime: string | null
+    avatar_size: number | null
+    update_time: Date | null
+    avatarUpdatedAt: string | null
+}
+
+interface UserRow extends RowDataPacket {
+    id: number
+    username: string
+    nickname: string | null
+    gender: number | null
+    self_intro: string | null
+    role: Role
+    avatar_mime: string | null
+    avatar_size: number | null
+    update_time: Date | null
+}
+
 interface AvatarRow extends RowDataPacket {
     avatar: Buffer | null
     avatar_mime: string | null
@@ -39,6 +64,52 @@ interface CreateUserInput {
         mime: string;
         size: number;
     } | null;
+}
+
+export async function listUsers (): Promise<User[] | null> {
+    try {
+        const [rows] = await pool.execute<UserRow[]>(
+            `
+            SELECT
+                id,
+                username,
+                nickname,
+                gender,
+                self_intro,
+                role,
+                avatar_mime,
+                avatar_size,
+                update_time
+            FROM
+                users
+            `
+        );
+        if (!rows.length) return null;
+
+        return rows.map(row => {
+            const avatarUpdatedAt = getAvatarUpdatedTime(row);
+            const normalizedGender = normalizeGender(row.gender);
+            return {
+                id: row.id,
+                username: row.username,
+                nickname: row.nickname,
+                gender: normalizedGender,
+                self_intro: row.self_intro,
+                role: row.role,
+                avatar_mime: row.avatar_mime,
+                avatar_size: row.avatar_size,
+                update_time: row.update_time,
+                avatarUpdatedAt: avatarUpdatedAt
+            }
+        });
+    } catch (error) {
+        return null;
+    }
+}
+
+export async function deleteUser (userId: number) {
+    const [result] = await pool.execute<ResultSetHeader>(`DELETE FROM users WHERE id = ?`, [userId]);
+    return result.affectedRows > 0;
 }
 
 export async function findUserProfileById(userId: number): Promise<UserProfile | null> {

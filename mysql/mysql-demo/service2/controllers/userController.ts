@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import multer from 'multer';
 import sharp from 'sharp';
 import type { Role } from '../types/session';
-import { findUserProfileById, getUserAvatar, updateUserProfile, updateUserAvatar, createUser } from '../models/userModel';
+import { findUserProfileById, getUserAvatar, updateUserProfile, updateUserAvatar, createUser, listUsers, deleteUser } from '../models/userModel';
 import { updateSession } from "../models/sessionStore";
 import { normalizeGender, normalizeRole } from '../utils/user';
 
@@ -38,6 +38,45 @@ const upload = multer({
 });
 // 解析文件的中间件
 export const avatarUploadMiddleware = upload.single('avatar');
+
+export async function getUserController (req: Request, res: Response) {
+    if (!req.session) return;
+
+    try {
+        const users = await listUsers();
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: '用户信息查询失败' });
+    }
+}
+
+export async function deleteUserController (req: Request, res: Response) {
+    if (!req.session) return;
+
+    const userId = Number(req.params?.userId);
+    if (!userId || Number.isNaN(userId)) {
+        res.status(400).json({
+            message: '用户ID格式错误'
+        });
+        return;
+    }
+
+    try {
+        const deleted = await deleteUser(userId);
+        if (!deleted) {
+            res.status(400).json({
+                message: '删除用户失败！'
+            });
+            return;
+        }
+        res.status(200).json({ message: '删除用户成功！' });
+    } catch (error) {
+        console.log(error)
+        res.status(400).json({
+            message: '删除用户失败!'
+        });
+    }
+}
 
 export async function getProfile(req: Request, res: Response) {
     if (!req.session) return;
@@ -77,9 +116,15 @@ export async function updateProfile(req: Request, res: Response) {
 }
 
 export async function getAvatar(req: Request, res: Response) {
-    if (!req.session) return;
+    const userId = Number(req.query.userId ?? req.session?.userId);
+    if (!userId || Number.isNaN(userId)) {
+        res.status(400).json({
+            message: '用户id格式不正确'
+        });
+        return;
+    }
 
-    const avatar = await getUserAvatar(req.session.userId);
+    const avatar = await getUserAvatar(userId);
     if (!avatar) {
         res.status(404).json({ message: '未上传头像' });
         return;
