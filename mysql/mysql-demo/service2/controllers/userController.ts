@@ -1,9 +1,34 @@
 import { Request, Response } from "express";
 import multer from 'multer';
 import sharp from 'sharp';
-import { findUserProfileById, getUserAvatar, updateUserProfile, updateUserAvatar } from '../models/userModel';
+import type { Role } from '../types/session';
+import { findUserProfileById, getUserAvatar, updateUserProfile, updateUserAvatar, createUser } from '../models/userModel';
 import { updateSession } from "../models/sessionStore";
-import { normalizeGender } from '../utils/user';
+import { normalizeGender, normalizeRole } from '../utils/user';
+
+const MAX_BASE64_AVATAR_SIZE = 2 * 1024 * 1024
+const parseBase64Avatar = (input: unknown) => {
+  if (typeof input !== 'string' || !input) {
+    return null
+  }
+  const match = input.match(/^data:(.+);base64,(.+)$/)
+  if (!match) {
+    return null
+  }
+  const mime = match[1]
+  if (!mime.startsWith('image/')) {
+    return null
+  }
+  const buffer = Buffer.from(match[2], 'base64')
+  if (buffer.length > MAX_BASE64_AVATAR_SIZE) {
+    throw new Error('AvatarTooLarge')
+  }
+  return {
+    data: buffer,
+    mime,
+    size: buffer.length,
+  }
+}
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -100,5 +125,67 @@ export async function updateAvatar(req: Request, res: Response) {
     } catch (error) {
         console.error('compress avatar failed:', error)
         res.status(500).json({ message: '头像上传失败，请重试' })
+    }
+}
+
+export async function createUserController (req: Request, res: Response) {
+    if (!req.session) return;
+
+    const {
+        username,
+        password,
+        nickname = null,
+        role = 'user',
+        avatar: avatarBase64
+    } = req.body ?? {};
+
+    const normalizedRole: Role = normalizeRole(role);
+    let avatarPayload: ReturnType<typeof parseBase64Avatar> = null;
+
+    if (avatarBase64) {
+        try {
+            avatarPayload = parseBase64Avatar(avatarBase64);
+            if (!avatarPayload) {
+                res.status(400).json({
+                    message: '头像格式不正确，请上传 JPG 或 PNG 图片'
+                });
+                return;
+            }
+        } catch (error) {
+            if ((error as Error).message === 'AvatarTooLarge') {
+                res.status(400).json({ message: '头像大小请控制在 2MB 以内' });
+            } else {
+                res.status(400).json({ message: '头像格式不正确，请重新上传' })
+            }
+            return;
+        }
+    }
+
+    try {
+        const insertId = await createUser({
+            username,
+            password,
+            nickname,
+            role: normalizedRole,
+            avatar: avatarPayload
+        });
+        res.status(201).json({
+            message: '用户创建成功！',
+            user: {
+                id: insertId,
+                username,
+                nickname,
+                role: normalizedRole
+            }
+        });
+    } catch (error) {
+        const err = error as { code?: string };
+        if (err.code === 'ER_DUP_ENTRY') {
+            res.status(409).json({ message: '用户名已存在' });
+            return;
+        }
+
+        console.error('Create user failed:', error);
+        res.status(500).json({ message: '服务器错误，请稍后重试' });
     }
 }

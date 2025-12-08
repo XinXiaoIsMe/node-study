@@ -1,5 +1,4 @@
 import crypto from 'node:crypto';
-import type { Request } from 'express';
 import type { SessionData } from "../types/session";
 
 const sessions = new Map<string, SessionData>();

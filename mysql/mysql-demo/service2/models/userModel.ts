@@ -29,6 +29,18 @@ interface AvatarRow extends RowDataPacket {
     avatar_mime: string | null
 }
 
+interface CreateUserInput {
+    username: string;
+    password: string;
+    nickname: string | null;
+    role: Role;
+    avatar?: {
+        data: Buffer;
+        mime: string;
+        size: number;
+    } | null;
+}
+
 export async function findUserProfileById(userId: number): Promise<UserProfile | null> {
     try {
         const [rows] = await pool.execute<UserProfileRow[]>(
@@ -120,4 +132,30 @@ export async function updateUserAvatar (
         [params.data, params.mime, params.size, userId]
     );
     return result.affectedRows > 0;
+}
+
+export async function createUser ({
+    username,
+    password,
+    nickname,
+    role,
+    avatar
+}: CreateUserInput) {
+    const columns = ['username', 'password', 'nickname', 'role'];
+    const placeholders = ['?', '?', '?', '?'];
+    const values: Array<string | Role | Buffer | number | null> = [username, password, nickname, role];
+
+    if (avatar && avatar.data.length > 0) {
+        columns.push('avatar', 'avatar_mime', 'avatar_size');
+        placeholders.push('?', '?', '?');
+        values.push(avatar.data, avatar.mime, avatar.size);
+    }
+
+    const [result] = await pool.execute<ResultSetHeader>(
+        `
+        INSERT INTO users (${columns.join(',')}) VALUES (${placeholders.join(',')})
+        `,
+        values
+    );
+    return result.insertId;
 }

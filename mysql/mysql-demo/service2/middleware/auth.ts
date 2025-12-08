@@ -34,6 +34,24 @@ export function requireAuth (req: Request, res: Response, next: NextFunction) {
 }
 
 /**
+ * 判断用户是否是管理员
+ * @param req Request
+ * @param _res Response
+ * @param next NextFunction
+ */
+export function requireAdmin (req: Request, res: Response, next: NextFunction) {
+  if (!req.session) {
+    res.status(401).json({ message: '未授权' });
+    return;
+  }
+  if (req.session.role !== 'admin') {
+    res.status(403).json({ message: '无权限操作' });
+    return;
+  }
+  next();
+}
+
+/**
  * 获取token
  * @param req 
  */
