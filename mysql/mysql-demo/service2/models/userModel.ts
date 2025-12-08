@@ -102,3 +102,22 @@ export async function getUserAvatar(userId: number) {
         mime: rows[0].avatar_mime ?? 'image/png',
     }
 }
+
+export async function updateUserAvatar (
+    userId: number, 
+    params: {
+        data: Buffer;
+        mime: string;
+        size: number;
+    }
+) {
+    const [result] = await pool.execute<ResultSetHeader>(
+        `
+        UPDATE users
+        SET avatar = ?, avatar_mime = ?, avatar_size = ?, update_time = CURRENT_TIMESTAMP
+        WHERE id = ?
+        `,
+        [params.data, params.mime, params.size, userId]
+    );
+    return result.affectedRows > 0;
+}

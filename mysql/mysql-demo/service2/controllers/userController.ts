@@ -1,7 +1,18 @@
 import { Request, Response } from "express";
-import { findUserProfileById, getUserAvatar, updateUserProfile } from '../models/userModel';
+import multer from 'multer';
+import sharp from 'sharp';
+import { findUserProfileById, getUserAvatar, updateUserProfile, updateUserAvatar } from '../models/userModel';
 import { updateSession } from "../models/sessionStore";
 import { normalizeGender } from '../utils/user';
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 2 * 1024 * 1024, // 2MB 限制
+  },
+});
+// 解析文件的中间件
+export const avatarUploadMiddleware = upload.single('avatar');
 
 export async function getProfile(req: Request, res: Response) {
     if (!req.session) return;
@@ -15,7 +26,7 @@ export async function getProfile(req: Request, res: Response) {
     res.json({ profile })
 }
 
-export async function updateProfile (req: Request, res: Response) {
+export async function updateProfile(req: Request, res: Response) {
     if (!req.session) return;
 
     const { nickname = null, gender = null, selfIntro = null } = req.body ?? {};
@@ -40,7 +51,7 @@ export async function updateProfile (req: Request, res: Response) {
     res.json({ profile });
 }
 
-export async function getAvatar (req: Request, res: Response) {
+export async function getAvatar(req: Request, res: Response) {
     if (!req.session) return;
 
     const avatar = await getUserAvatar(req.session.userId);
@@ -51,4 +62,43 @@ export async function getAvatar (req: Request, res: Response) {
 
     res.setHeader('Content-Type', avatar.mime);
     res.send(avatar.data);
+}
+
+export async function updateAvatar(req: Request, res: Response) {
+    if (!req.session) return;
+
+    if (!req.file) {
+        res.status(400).json({ message: '请上传头像文件' })
+        return
+    }
+
+    try {
+        const userId = req.session.userId;
+        const token = req.session.token;
+        // 获取压缩头像
+        const compressed = await sharp(req.file.buffer)
+            .rotate()
+            .resize(320, 320, { fit: 'inside' })
+            .jpeg({ quality: 80 })
+            .toBuffer();
+        
+        // 更新数据库
+        await updateUserAvatar(userId, {
+            data: compressed,
+            mime: 'image/jpeg',
+            size: compressed.length
+        });
+
+        const profile = await findUserProfileById(userId);
+        updateSession(token, {
+            avatarUpdatedAt: profile?.avatarUpdatedAt ?? new Date().toISOString()
+        });
+        res.json({
+            message: '头像已更新',
+            profile
+        });
+    } catch (error) {
+        console.error('compress avatar failed:', error)
+        res.status(500).json({ message: '头像上传失败，请重试' })
+    }
 }
