@@ -1,8 +1,9 @@
 import express from 'express';
 import { corsMiddleware } from './middleware/cors';
-import { attachSession } from './middleware/auth';
+import { attachSession, requireAuth } from './middleware/auth';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
+import taskRoutes from './routes/taskRoutes';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use(attachSession);
 // 路由
 app.use('/api', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/tasks', requireAuth, taskRoutes);
 
 app.listen(3000, () => {
     console.log('Server is running on 3000...')

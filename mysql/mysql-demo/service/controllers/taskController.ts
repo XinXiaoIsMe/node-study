@@ -122,7 +122,6 @@ export const updateTaskDetailController = async (req: Request, res: Response) =>
     const normalizedDueDate = dueDate && typeof dueDate === 'string' && dueDate.trim().length > 0 ? dueDate : null
     const normalizedStartDate = startDate && typeof startDate === 'string' && startDate.trim().length > 0 ? startDate : null
     const normalizedPriority = priority as TaskPriority
-    console.log(normalizedDueDate)
     const updated = await updateTaskDetail(taskId, req.session!.userId, {
       title: title.trim(),
       description: description || '',
