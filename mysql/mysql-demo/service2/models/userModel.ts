@@ -59,11 +59,21 @@ interface CreateUserInput {
     password: string;
     nickname: string | null;
     role: Role;
+    gender: number | null;
+    self_intro: string | null;
     avatar?: {
         data: Buffer;
         mime: string;
         size: number;
     } | null;
+}
+
+interface UpdateUserInput {
+    username: string;
+    nickname: string | null;
+    role: Role;
+    self_intro: string;
+    gender: number;
 }
 
 export async function listUsers (): Promise<User[] | null> {
@@ -209,12 +219,14 @@ export async function createUser ({
     username,
     password,
     nickname,
+    gender,
     role,
-    avatar
+    avatar,
+    self_intro
 }: CreateUserInput) {
-    const columns = ['username', 'password', 'nickname', 'role'];
-    const placeholders = ['?', '?', '?', '?'];
-    const values: Array<string | Role | Buffer | number | null> = [username, password, nickname, role];
+    const columns = ['username', 'password', 'nickname', 'gender', 'role', 'self_intro'];
+    const placeholders = ['?', '?', '?', '?', '?', '?'];
+    const values: Array<string | Role | Buffer | number | null> = [username, password, nickname, gender, role, self_intro];
 
     if (avatar && avatar.data.length > 0) {
         columns.push('avatar', 'avatar_mime', 'avatar_size');
@@ -229,4 +241,16 @@ export async function createUser ({
         values
     );
     return result.insertId;
+}
+
+export async function updateUser (userId: number, options: UpdateUserInput) {
+    const [result] = await pool.execute<ResultSetHeader>(
+        `
+        UPDATE users
+        SET username = ?, nickname = ?, gender = ?, role = ?, self_intro = ?, update_time = CURRENT_TIMESTAMP
+        WHERE id = ?
+        `,
+        [options.username, options.nickname, options.gender, options.role, options.self_intro, userId]
+    );
+    return result.affectedRows > 0;
 }

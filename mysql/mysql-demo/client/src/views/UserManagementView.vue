@@ -1,276 +1,293 @@
 <script setup lang="ts">
-import { Hide, View } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
-import type { FormInstance, FormItemRule, FormRules } from 'element-plus'
-import { isAxiosError } from 'axios'
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { type Role, useAuthStore } from '../stores/auth'
-import http from '../services/http'
-import AppLayout from '../components/AppLayout.vue'
-import AvatarCropperDialog from '../components/AvatarCropperDialog.vue'
+import { Hide, View } from "@element-plus/icons-vue";
+import { ElMessage } from "element-plus";
+import type { FormInstance, FormItemRule, FormRules } from "element-plus";
+import { isAxiosError } from "axios";
+import { computed, onBeforeUnmount, reactive, ref, watch } from "vue";
+import { useRouter } from "vue-router";
+import { type Role, useAuthStore } from "../stores/auth";
+import http from "../services/http";
+import AppLayout from "../components/AppLayout.vue";
+import AvatarCropperDialog from "../components/AvatarCropperDialog.vue";
 
 interface CreateUserForm {
-  username: string
-  password: string
-  confirmPassword: string
-  nickname: string
-  role: Role
+  username: string;
+  password: string;
+  confirmPassword: string;
+  nickname: string;
+  role: Role;
+  gender: number | null;
+  self_intro: string | null;
 }
 
 interface CreateUserResponse {
   user?: {
-    username?: string
-  }
-  message?: string
+    username?: string;
+  };
+  message?: string;
 }
 
-const auth = useAuthStore()
-const router = useRouter()
+const auth = useAuthStore();
+const router = useRouter();
 
 const roleOptions: Array<{ value: Role; label: string }> = [
-  { value: 'user', label: '普通用户' },
-  { value: 'admin', label: '系统管理员' },
-]
+  { value: "user", label: "普通用户" },
+  { value: "admin", label: "系统管理员" },
+];
 
 const createForm = reactive<CreateUserForm>({
-  username: '',
-  password: '',
-  confirmPassword: '',
-  nickname: '',
-  role: 'user',
-})
+  username: "",
+  password: "",
+  confirmPassword: "",
+  nickname: "",
+  role: "user",
+  gender: null,
+  self_intro: null
+});
 
-const formRef = ref<FormInstance>()
-const loading = ref(false)
-const showPassword = ref(false)
-const showConfirmPassword = ref(false)
-const avatarCropperVisible = ref(false)
-const avatarCropperSource = ref<string | null>(null)
-const avatarPreviewUrl = ref<string | null>(null)
-const avatarDataUrl = ref<string | null>(null)
-const avatarFileInputRef = ref<HTMLInputElement>()
+const formRef = ref<FormInstance>();
+const loading = ref(false);
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
+const avatarCropperVisible = ref(false);
+const avatarCropperSource = ref<string | null>(null);
+const avatarPreviewUrl = ref<string | null>(null);
+const avatarDataUrl = ref<string | null>(null);
+const avatarFileInputRef = ref<HTMLInputElement>();
 
 const cleanupAvatarSource = () => {
   if (avatarCropperSource.value) {
-    URL.revokeObjectURL(avatarCropperSource.value)
-    avatarCropperSource.value = null
+    URL.revokeObjectURL(avatarCropperSource.value);
+    avatarCropperSource.value = null;
   }
-}
+};
 
 const resetAvatarState = () => {
   if (avatarPreviewUrl.value) {
-    URL.revokeObjectURL(avatarPreviewUrl.value)
+    URL.revokeObjectURL(avatarPreviewUrl.value);
   }
-  avatarPreviewUrl.value = null
-  avatarDataUrl.value = null
-}
+  avatarPreviewUrl.value = null;
+  avatarDataUrl.value = null;
+};
 
 onBeforeUnmount(() => {
-  cleanupAvatarSource()
-  resetAvatarState()
-})
+  cleanupAvatarSource();
+  resetAvatarState();
+});
 
 watch(avatarCropperVisible, (visible) => {
   if (!visible) {
-    cleanupAvatarSource()
+    cleanupAvatarSource();
     if (avatarFileInputRef.value) {
-      avatarFileInputRef.value.value = ''
+      avatarFileInputRef.value.value = "";
     }
   }
-})
+});
 
-const validateConfirmPassword: NonNullable<FormItemRule['validator']> = (
+const validateConfirmPassword: NonNullable<FormItemRule["validator"]> = (
   _rule,
   value: string,
-  callback,
+  callback
 ) => {
   if (!value) {
-    callback(new Error('请再次输入密码'))
-    return
+    callback(new Error("请再次输入密码"));
+    return;
   }
   if (value !== createForm.password) {
-    callback(new Error('两次输入的密码不一致'))
-    return
+    callback(new Error("两次输入的密码不一致"));
+    return;
   }
-  callback()
-}
+  callback();
+};
 
 const rules: FormRules<CreateUserForm> = {
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, message: '用户名至少 3 个字符', trigger: 'blur' },
+    { required: true, message: "请输入用户名", trigger: "blur" },
+    { min: 3, message: "用户名至少 3 个字符", trigger: "blur" },
   ],
   password: [
-    { required: true, message: '请输入初始密码', trigger: 'blur' },
-    { min: 6, message: '密码至少 6 个字符', trigger: 'blur' },
+    { required: true, message: "请输入初始密码", trigger: "blur" },
+    { min: 6, message: "密码至少 6 个字符", trigger: "blur" },
   ],
   confirmPassword: [
-    { required: true, message: '请再次输入密码以确认', trigger: 'blur' },
+    { required: true, message: "请再次输入密码以确认", trigger: "blur" },
     {
       validator: validateConfirmPassword,
-      trigger: ['blur', 'change'] as const,
+      trigger: ["blur", "change"] as const,
     },
   ],
   nickname: [
-    { max: 30, message: '昵称长度请控制在 30 个字符以内', trigger: 'blur' },
+    { max: 30, message: "昵称长度请控制在 30 个字符以内", trigger: "blur" },
   ],
-}
+};
+
+const genderOptions = [
+  { label: "保密", value: null },
+  { label: "男", value: 1 },
+  { label: "女", value: 2 },
+];
 
 const currentUserName = computed(
-  () => auth.state.user?.nickname || auth.state.user?.username || '',
-)
+  () => auth.state.user?.nickname || auth.state.user?.username || ""
+);
 
 const resetFeedback = () => {
-  ElMessage.closeAll()
-}
+  ElMessage.closeAll();
+};
 
 const resetForm = () => {
-  formRef.value?.resetFields()
-  createForm.username = ''
-  createForm.password = ''
-  createForm.confirmPassword = ''
-  createForm.nickname = ''
-  createForm.role = 'user'
-  resetAvatarState()
-}
+  formRef.value?.resetFields();
+  createForm.username = "";
+  createForm.password = "";
+  createForm.confirmPassword = "";
+  createForm.nickname = "";
+  createForm.role = "user";
+  createForm.gender = null;
+  createForm.self_intro = null;
+  resetAvatarState();
+};
 
 const redirectToLogin = () => {
-  router.push({ name: 'login', query: { redirect: '/users' } })
-}
+  router.push({ name: "login", query: { redirect: "/users" } });
+};
 
 const ensureToken = () => {
   if (!auth.state.token) {
-    ElMessage.error('登录状态已过期，请重新登录')
-    redirectToLogin()
-    return false
+    ElMessage.error("登录状态已过期，请重新登录");
+    redirectToLogin();
+    return false;
   }
-  return true
-}
+  return true;
+};
 
 const handleAvatarClick = () => {
   if (loading.value) {
-    return
+    return;
   }
-  avatarFileInputRef.value?.click()
-}
+  avatarFileInputRef.value?.click();
+};
 
 const handleAvatarFileChange = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
   if (!file) {
-    return
+    return;
   }
 
-  if (!file.type.startsWith('image/')) {
-    ElMessage.error('请选择图片文件')
-    target.value = ''
-    return
+  if (!file.type.startsWith("image/")) {
+    ElMessage.error("请选择图片文件");
+    target.value = "";
+    return;
   }
 
   if (file.size > 2 * 1024 * 1024) {
-    ElMessage.error('图片大小请控制在 2MB 以内')
-    target.value = ''
-    return
+    ElMessage.error("图片大小请控制在 2MB 以内");
+    target.value = "";
+    return;
   }
 
-  cleanupAvatarSource()
-  avatarCropperSource.value = URL.createObjectURL(file)
-  avatarCropperVisible.value = true
-}
+  cleanupAvatarSource();
+  avatarCropperSource.value = URL.createObjectURL(file);
+  avatarCropperVisible.value = true;
+};
 
 const blobToDataUrl = (blob: Blob) =>
   new Promise<string>((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(String(reader.result))
-    reader.onerror = () => reject(reader.error || new Error('读取文件失败'))
-    reader.readAsDataURL(blob)
-  })
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error || new Error("读取文件失败"));
+    reader.readAsDataURL(blob);
+  });
 
-const handleAvatarConfirm = async ({ blob, previewUrl }: { blob: Blob; previewUrl: string }) => {
-  avatarCropperVisible.value = false
+const handleAvatarConfirm = async ({
+  blob,
+  previewUrl,
+}: {
+  blob: Blob;
+  previewUrl: string;
+}) => {
+  avatarCropperVisible.value = false;
   if (blob.size > 2 * 1024 * 1024) {
-    URL.revokeObjectURL(previewUrl)
-    ElMessage.error('头像大小请控制在 2MB 以内')
-    return
+    URL.revokeObjectURL(previewUrl);
+    ElMessage.error("头像大小请控制在 2MB 以内");
+    return;
   }
   try {
-    const dataUrl = await blobToDataUrl(blob)
-    resetAvatarState()
-    avatarPreviewUrl.value = previewUrl
-    avatarDataUrl.value = dataUrl
+    const dataUrl = await blobToDataUrl(blob);
+    resetAvatarState();
+    avatarPreviewUrl.value = previewUrl;
+    avatarDataUrl.value = dataUrl;
   } catch (error) {
-    URL.revokeObjectURL(previewUrl)
-    console.error('convert avatar failed', error)
-    ElMessage.error('头像处理失败，请重试')
+    URL.revokeObjectURL(previewUrl);
+    console.error("convert avatar failed", error);
+    ElMessage.error("头像处理失败，请重试");
   }
-}
+};
 
 const handleCreateUser = async () => {
   if (!formRef.value) {
-    return
+    return;
   }
 
-  resetFeedback()
+  resetFeedback();
 
-  const isValid = await formRef.value.validate().catch(() => false)
+  const isValid = await formRef.value.validate().catch(() => false);
   if (!isValid) {
-    return
+    return;
   }
 
   if (!ensureToken()) {
-    return
+    return;
   }
 
-  loading.value = true
+  loading.value = true;
   try {
-    const { data } = await http.post<CreateUserResponse>('/users', {
-      username: createForm.username,
-      password: createForm.password,
-      nickname: createForm.nickname || null,
-      role: createForm.role,
-      avatar: avatarDataUrl.value,
-    })
+    const { data } = await http.post<CreateUserResponse>("/users", {
+      ...createForm,
+      avatar: avatarDataUrl.value
+    });
 
     ElMessage.success(
-      `用户 ${data?.user?.username || createForm.username} 创建成功`,
-    )
-    resetForm()
+      `用户 ${data?.user?.username || createForm.username} 创建成功`
+    );
+    resetForm();
   } catch (error) {
-    console.error('create user request failed', error)
+    console.error("create user request failed", error);
     if (isAxiosError(error)) {
-      const status = error.response?.status
+      const status = error.response?.status;
       if (status === 403) {
-        return
+        return;
       }
       const message =
         (error.response?.data as { message?: string } | undefined)?.message ||
-        (status === 401 ? '登录状态已过期，请重新登录' : '创建用户失败，请稍后重试')
-      ElMessage.error(message)
+        (status === 401
+          ? "登录状态已过期，请重新登录"
+          : "创建用户失败，请稍后重试");
+      ElMessage.error(message);
     } else {
-      ElMessage.error('无法连接服务器，请检查网络或稍后再试')
+      ElMessage.error("无法连接服务器，请检查网络或稍后再试");
     }
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const togglePasswordVisibility = () => {
-  showPassword.value = !showPassword.value
-}
+  showPassword.value = !showPassword.value;
+};
 
 const toggleConfirmPasswordVisibility = () => {
-  showConfirmPassword.value = !showConfirmPassword.value
-}
+  showConfirmPassword.value = !showConfirmPassword.value;
+};
 
 watch(
   () => createForm.password,
   () => {
     if (createForm.confirmPassword) {
-      formRef.value?.validateField('confirmPassword').catch(() => {})
+      formRef.value?.validateField("confirmPassword").catch(() => {});
     }
-  },
-)
+  }
+);
 </script>
 
 <template>
@@ -303,18 +320,14 @@ watch(
         </el-descriptions>
 
         <div class="users-avatar">
-          <div
-            class="users-avatar__preview"
-            @click="handleAvatarClick"
-          >
-            <el-avatar
-              :size="96"
-              :src="avatarPreviewUrl || undefined"
-            >
-              {{ createForm.nickname || createForm.username || '新' }}
+          <div class="users-avatar__preview" @click="handleAvatarClick">
+            <el-avatar :size="96" :src="avatarPreviewUrl || undefined">
+              {{ createForm.nickname || createForm.username || "新" }}
             </el-avatar>
             <div class="users-avatar__overlay">
-              <span>{{ avatarPreviewUrl ? '点击更换头像' : '点击上传头像' }}</span>
+              <span>{{
+                avatarPreviewUrl ? "点击更换头像" : "点击上传头像"
+              }}</span>
             </div>
           </div>
           <input
@@ -385,7 +398,9 @@ watch(
                   <template #suffix>
                     <el-icon
                       class="password-toggle"
-                      :aria-label="showConfirmPassword ? '隐藏密码' : '显示密码'"
+                      :aria-label="
+                        showConfirmPassword ? '隐藏密码' : '显示密码'
+                      "
                       role="button"
                       tabindex="0"
                       @click="toggleConfirmPasswordVisibility"
@@ -420,21 +435,37 @@ watch(
                 </el-select>
               </el-form-item>
             </el-col>
+            <el-col>
+              <el-form-item label="性别" prop="gender">
+                <el-select
+                  v-model="createForm.gender"
+                  placeholder="选择性别"
+                  clearable
+                >
+                  <el-option
+                    v-for="option in genderOptions"
+                    :key="String(option.value)"
+                    :label="option.label"
+                    :value="option.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col>
+              <el-form-item label="自我介绍" prop="self_intro">
+                <el-input
+                  v-model="createForm.self_intro"
+                  type="textarea"
+                  :rows="2"
+                />
+              </el-form-item>
+            </el-col>
           </el-row>
           <el-form-item>
-            <el-button
-              type="primary"
-              :loading="loading"
-              native-type="submit"
-            >
+            <el-button type="primary" :loading="loading" native-type="submit">
               创建用户
             </el-button>
-            <el-button
-              :disabled="loading"
-              @click="resetForm"
-            >
-              重置
-            </el-button>
+            <el-button :disabled="loading" @click="resetForm"> 重置 </el-button>
           </el-form-item>
         </el-form>
       </el-card>

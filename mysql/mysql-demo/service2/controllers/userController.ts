@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import multer from 'multer';
 import sharp from 'sharp';
 import type { Role } from '../types/session';
-import { findUserProfileById, getUserAvatar, updateUserProfile, updateUserAvatar, createUser, listUsers, deleteUser } from '../models/userModel';
+import { findUserProfileById, getUserAvatar, updateUserProfile, updateUserAvatar, createUser, listUsers, deleteUser, updateUser } from '../models/userModel';
 import { updateSession } from "../models/sessionStore";
 import { normalizeGender, normalizeRole } from '../utils/user';
 
@@ -71,7 +71,6 @@ export async function deleteUserController (req: Request, res: Response) {
         }
         res.status(200).json({ message: '删除用户成功！' });
     } catch (error) {
-        console.log(error)
         res.status(400).json({
             message: '删除用户失败!'
         });
@@ -181,7 +180,9 @@ export async function createUserController (req: Request, res: Response) {
         password,
         nickname = null,
         role = 'user',
-        avatar: avatarBase64
+        gender = null,
+        avatar: avatarBase64,
+        self_intro = null
     } = req.body ?? {};
 
     const normalizedRole: Role = normalizeRole(role);
@@ -211,8 +212,10 @@ export async function createUserController (req: Request, res: Response) {
             username,
             password,
             nickname,
+            gender,
+            self_intro,
             role: normalizedRole,
-            avatar: avatarPayload
+            avatar: avatarPayload,
         });
         res.status(201).json({
             message: '用户创建成功！',
@@ -232,5 +235,46 @@ export async function createUserController (req: Request, res: Response) {
 
         console.error('Create user failed:', error);
         res.status(500).json({ message: '服务器错误，请稍后重试' });
+    }
+}
+
+export async function updateUserController (req: Request, res: Response) {
+    const {
+        userId: id,
+        username,
+        nickname,
+        gender = 0,
+        role = 'user',
+        self_intro = '',
+    } = req.body ?? {};
+
+    const userId = Number(id);
+
+    if (!userId || Number.isNaN(userId)) {
+        res.status(400).json({ message: 'userId不合法' });
+        return;
+    }
+
+    if (!username) {
+        res.status(400).json({ message: '用户名不合法' });
+        return;
+    }
+
+    try {
+        const updated = await updateUser(userId, {
+            username,
+            nickname,
+            gender,
+            role,
+            self_intro
+        });
+        if (!updated) {
+            res.status(400).json({ message: '修改用户信息失败' });
+            return;
+        }
+
+        res.status(200).json({ message: '修改用户信息成功' });
+    } catch (error) {
+        res.status(400).json({ message: '服务器错误，请稍后重试' });
     }
 }

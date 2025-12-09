@@ -1,11 +1,12 @@
 import express from 'express';
 import { requireAuth, requireAdmin } from '../middleware/auth';
-import { getUserController, getProfile, updateProfile, getAvatar, updateAvatar, avatarUploadMiddleware, createUserController, deleteUserController } from '../controllers/userController';
+import { getUserController, getProfile, updateProfile, getAvatar, updateAvatar, avatarUploadMiddleware, createUserController, updateUserController, deleteUserController } from '../controllers/userController';
 
 const router = express.Router();
 
 router.get('/', requireAuth, requireAdmin, getUserController);
 router.post('/', requireAuth, requireAdmin, createUserController);
+router.put('/', requireAuth, requireAdmin, updateUserController);
 router.delete('/:userId', requireAuth, requireAdmin, deleteUserController);
 router.get('/me', requireAuth, getProfile);
 router.put('/me', requireAuth, updateProfile);

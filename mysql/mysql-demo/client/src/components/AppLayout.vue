@@ -8,6 +8,7 @@ import {
   SwitchButton,
   User,
   UserFilled,
+  Tools
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { computed, ref } from 'vue'
@@ -52,7 +53,7 @@ const menuItems = computed<MenuItem[]>(() => {
       children: [
         { label: '新建用户', path: '/users', icon: Plus },
         { label: '我的账号', path: '/users/account', icon: User },
-        { label: '管理账号', path: '/users/list', icon: User },
+        { label: '管理账号', path: '/users/list', icon: Tools },
       ],
     })
   }
