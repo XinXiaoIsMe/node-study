@@ -5,13 +5,16 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx index"
+    "dev": "tsx --watch index.ts",
+    "prisma:gen": "prisma generate",
+    "prisma:dev": "prisma migrate dev"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.15.0",
   "dependencies": {
+    "@prisma/adapter-mariadb": "^7.1.0",
     "@prisma/client": "^7.1.0",
     "express": "^5.2.1"
   },
