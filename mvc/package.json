@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "tsx --watch app.ts",
     "prisma:gen": "prisma generate",
@@ -13,11 +14,12 @@
   "license": "ISC",
   "packageManager": "pnpm@10.15.0",
   "dependencies": {
+    "@inversifyjs/http-core": "^4.8.0",
+    "@inversifyjs/http-express": "^4.8.0",
     "@prisma/adapter-mariadb": "^7.1.0",
     "@prisma/client": "^7.1.0",
     "express": "^5.2.1",
     "inversify": "^7.10.6",
-    "inversify-express-utils": "^6.5.0",
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {

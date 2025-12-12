@@ -1,8 +1,8 @@
-import { controller, httpGet } from 'inversify-express-utils';
+import { Controller, Get } from '@inversifyjs/http-core';
 
-@controller('/user')
+@Controller('/user')
 export class UserController {
-    @httpGet('/all')
+    @Get('/all')
     getUser () {
         return []
     }
