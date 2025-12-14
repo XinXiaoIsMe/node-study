@@ -1,7 +1,9 @@
 export const TYPES = {
     PrismaDb: Symbol.for('PrismaDb'),
     UserRepository: Symbol.for('UserRepository'),
-    UserService: Symbol.for('UserService')
+    UserService: Symbol.for('UserService'),
+    PostRepository: Symbol.for('PostRepository'),
+    PostService: Symbol.for('PostService')
 } as const;
 
 export const MIDDLEWARES = {
