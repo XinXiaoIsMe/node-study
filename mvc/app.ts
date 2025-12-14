@@ -1,25 +1,19 @@
 import 'reflect-metadata';
+import 'dotenv/config';
 import express from 'express';
-import { Container } from 'inversify';
 import { InversifyExpressHttpAdapter } from '@inversifyjs/http-express';
-import { UserService } from './src/user/service';
-import { TYPES } from './src/constants/types';
+import { container } from './container';
 
-import './src/user/controller';
+async function bootstrap() {
+    const adapter = new InversifyExpressHttpAdapter(container);
+    const app = await adapter.build();
 
-const container = new Container();
-container.bind<UserService>(TYPES.UserService).to(UserService);
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
 
-const adapter = new InversifyExpressHttpAdapter(container);
-const app = await adapter.build();
+    app.listen(3000, () => {
+        console.log('Server is running on 3000...');
+    });
+}
 
-// server.setConfig(() => {
-//     app.use(express.json());
-//     app.use(express.urlencoded({
-//         extended: true
-//     }));
-// });
-
-app.listen(3000, () => {
-    console.log('Server is running on 3000...');
-});
+bootstrap();
