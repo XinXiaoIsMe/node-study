@@ -12,21 +12,3 @@ generator client {
 datasource db {
   provider = "mysql"
 }
-
-model User {
-  id Int @id @default(autoincrement())
-  name String
-  email String @unique
-  age Int
-  posts Post[]
-}
-
-model Post {
-  id Int @id @default(autoincrement())
-  title String
-  content String?
-  publish Boolean @default(false)
-  authorId Int
-  // 删除用户时，会把用户下的post全部删除掉
-  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
-}
