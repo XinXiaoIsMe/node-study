@@ -1,0 +1,30 @@
+model User {
+    id Int @id @default(autoincrement())
+    // 登录名
+    username String @db.VarChar(32)
+    // 昵称
+    nickname String? @db.VarChar(32)
+    // 性别 1-男 2-女
+    gender Int? @default(1)
+    // 密码
+    password String @db.VarChar(32)
+    // 头像
+    avatar Bytes? @db.LongBlob
+    // 头像的mime类型
+    avatarMime String? @db.VarChar(64)
+    // 头像大小字节
+    avatarSize Int? @db.UnsignedInt
+    // 自我介绍
+    selfIntro String? @db.VarChar(255)
+    // 角色
+    role Role @default(user)
+    // 创建时间
+    createTime DateTime @default(now())
+    // 更新时间
+    updateTime DateTime @updatedAt
+}
+
+enum Role {
+    user
+    admin
+}
