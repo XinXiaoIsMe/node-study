@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx --watch app.ts",
+    "dev": "tsx --watch src/app.ts",
     "prisma:setup": "pnpm run prisma:generate && pnpm run prisma:migrate:dev && pnpn run seed",
     "prisma:init": "prisma init --datasource-provider mysql --output ../generated/prisma",
     "prisma:generate": "prisma generate",

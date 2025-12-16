@@ -1,0 +1,24 @@
+import 'dotenv/config';
+import { InversifyExpressHttpAdapter } from '@inversifyjs/http-express';
+import { container } from './container';
+import { CorsMiddleware } from './common/middleware/cors';
+import { MIDDLEWARES } from './common/ioc/common-types';
+
+async function bootstrap () {
+    const adapter = new InversifyExpressHttpAdapter(container);
+
+    adapter.applyGlobalMiddleware(
+        MIDDLEWARES.CorsMiddleware,
+    );
+
+    const app = await adapter.build();
+
+    // 浏览器发送的OPTIONS请求不会被inversify捕捉到，因此这里需要兜底处理OPTIONS请求
+    app.use(CorsMiddleware.middleware);
+
+    app.listen(3000, () => {
+        console.log('Server is running on 3000...');
+    });
+}
+
+bootstrap();
