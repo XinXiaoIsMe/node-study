@@ -5,14 +5,14 @@ packages:
   - service3
 
 catalog:
-  typescript: ~5.9.3
-  tsx: ^4.16.5
-  express: ^5.1.0
+  '@types/express': ^4.17.25
+  '@types/js-yaml': ^4.0.9
+  '@types/multer': ^1.4.11
+  '@types/node': ^20.19.27
+  express: ^5.2.1
   js-yaml: ^4.1.0
   multer: ^1.4.5-lts.1
   mysql2: ^3.15.3
   sharp: ^0.33.5
-  '@types/express': ^4.17.21
-  '@types/js-yaml': ^4.0.9
-  '@types/multer': ^1.4.11
-  '@types/node': ^20.16.5
+  tsx: ^4.21.0
+  typescript: ~5.9.3
