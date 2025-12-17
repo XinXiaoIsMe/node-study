@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx --watch src/app.ts",
-    "prisma:setup": "pnpm run prisma:generate && pnpm run prisma:migrate:dev && pnpn run seed",
+    "prisma:setup": "pnpm run prisma:generate && pnpm run prisma:migrate:dev && pnpm run seed",
     "prisma:init": "prisma init --datasource-provider mysql --output ../generated/prisma",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",

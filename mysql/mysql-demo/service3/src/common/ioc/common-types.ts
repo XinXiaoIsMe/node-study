@@ -1,5 +1,5 @@
 export const MIDDLEWARES = {
-    CorsMiddleware: Symbol.for('CorsMiddleware')
+    CorsMiddleware: Symbol('CorsMiddleware')
 } as const;
 
 export const TYPES = {

@@ -5,9 +5,9 @@ export interface IAuthController {
 }
 
 export interface IAuthService {
-    login(data: LoginDto): Promise<any>;
+    login(username: string, password: string): Promise<any>;
 }
 
 export interface IAuthRepository {
-    findOne(username: string): Promise<any>;
+    findByUsername(username: string): Promise<any>;
 }

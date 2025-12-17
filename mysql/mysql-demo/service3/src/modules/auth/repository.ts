@@ -10,7 +10,7 @@ export class AuthRepository implements IAuthRepository {
         private readonly db: PrismaDb
     ) {}
 
-    findOne(username: string) {
+    findByUsername(username: string) {
         return this.db.prisma.user.findUnique({
             where: {
                 username

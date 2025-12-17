@@ -1,5 +1,5 @@
 import { injectable } from 'inversify';
-import { BaseValidator } from '../../../common/middleware/base-validator';
+import { BaseValidator } from '../../../common/middleware/base-validator.middleware';
 import { LoginDto } from '../dto/login.dto';
 
 @injectable()

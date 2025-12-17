@@ -2,6 +2,7 @@ import { ExpressMiddleware } from '@inversifyjs/http-express';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { NextFunction, Request, Response } from 'express';
+import { HttpError } from '../../shared/errors';
 
 export abstract class BaseValidator implements ExpressMiddleware {
     abstract dto: any;
@@ -17,12 +18,7 @@ export abstract class BaseValidator implements ExpressMiddleware {
         const errors = await validate(instance);
 
         if (errors.length) {
-            res.status(400).json({
-                code: 40001,
-                message: 'Validation failed',
-                errors
-            });
-            return;
+            throw new HttpError(200, 'Validation failed', errors);
         }
 
         next();

@@ -1,7 +1,8 @@
 import { Container } from 'inversify';
-import { CorsMiddleware } from '../middleware/cors';
+import { CorsMiddleware } from '../middleware/cors.middleware';
 import { MIDDLEWARES, TYPES } from '../ioc/common-types';
 import { PrismaDb } from '../../prisma/client';
+import { GlobalErrorFilter } from '../filter/error.filter';
 
 /**
  * 绑定公共模块
@@ -11,6 +12,8 @@ export function bindCommon(container: Container) {
     // prisma
     container.bind<PrismaDb>(TYPES.PrismaDb).to(PrismaDb);
     // middlewares
-    container.bind(MIDDLEWARES.CorsMiddleware).to(CorsMiddleware).inSingletonScope();
+    container.bind<CorsMiddleware>(MIDDLEWARES.CorsMiddleware).to(CorsMiddleware).inSingletonScope();
+    // filters
+    container.bind<GlobalErrorFilter>(GlobalErrorFilter).toSelf();
 }
 

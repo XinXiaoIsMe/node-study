@@ -1,15 +1,18 @@
 import 'dotenv/config';
 import { InversifyExpressHttpAdapter } from '@inversifyjs/http-express';
 import { container } from './container';
-import { CorsMiddleware } from './common/middleware/cors';
+import { CorsMiddleware } from './common/middleware/cors.middleware';
 import { MIDDLEWARES } from './common/ioc/common-types';
+import { GlobalErrorFilter } from './common/filter/error.filter';
 
 async function bootstrap () {
     const adapter = new InversifyExpressHttpAdapter(container);
 
     adapter.applyGlobalMiddleware(
-        MIDDLEWARES.CorsMiddleware,
+        MIDDLEWARES.CorsMiddleware
     );
+
+    adapter.useGlobalFilters(GlobalErrorFilter);
 
     const app = await adapter.build();
 

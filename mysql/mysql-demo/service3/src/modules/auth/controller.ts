@@ -19,6 +19,6 @@ export class AuthController implements IAuthController {
     @ApplyMiddleware(AUTH_VALIDATORS.LoginValidator)
     @Post('/login')
     login(@Body() data: LoginDto): Promise<any> {
-        return this.authService.login(data);
+        return this.authService.login(data.username, data.password);
     }
 }
