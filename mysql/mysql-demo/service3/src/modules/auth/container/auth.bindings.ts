@@ -2,7 +2,8 @@ import { Container } from 'inversify';
 import { AuthController } from '../controller';
 import { AuthService } from '../service';
 import { AuthRepository } from '../repository';
-import type { IAuthService, IAuthRepository } from '../types/interfaces';
+import type { IAuthService,  } from '../service/interfaces';
+import type { IAuthRepository } from '../repository/interfaces';
 import { AUTH_TYPES, AUTH_VALIDATORS } from '../types/ioc-types';
 import { LoginValidator } from '../validator/login.validator';
 

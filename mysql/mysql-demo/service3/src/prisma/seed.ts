@@ -26,11 +26,13 @@ async function main() {
     const adminUsername = 'admin'
     const adminPassword = '123456' // dev/test 默认密码
     const adminNickname = '超级管理员'
+    const adminRole = 'admin';
 
     const admin = await prisma.user.upsert({
         where: { username: adminUsername },
         update: {
             nickname: adminNickname,
+            role: adminRole,
             // 如果你希望每次 seed 都重置密码，可以加下面
             password: bcrypt.hashSync(adminPassword, 10),
         },
@@ -38,6 +40,7 @@ async function main() {
             username: adminUsername,
             password: bcrypt.hashSync(adminPassword, 10),
             nickname: adminNickname,
+            role: adminRole,
         }
     });
 

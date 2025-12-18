@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx --watch src/app.ts",
-    "prisma:setup": "pnpm run prisma:generate && pnpm run prisma:migrate:dev && pnpm run seed",
+    "prisma:setup": "pnpm run prisma:generate && pnpm run prisma:migrate:dev && pnpm run prisma:seed",
     "prisma:init": "prisma init --datasource-provider mysql --output ../generated/prisma",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
@@ -26,10 +26,12 @@
     "class-validator": "^0.14.3",
     "express": "catalog:",
     "inversify": "^7.10.6",
+    "jsonwebtoken": "^9.0.3",
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
     "@types/express": "catalog:",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "catalog:",
     "dotenv": "^17.2.3",
     "prisma": "^7.1.0",

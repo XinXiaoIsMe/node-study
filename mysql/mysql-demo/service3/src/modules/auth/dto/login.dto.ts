@@ -1,10 +1,26 @@
 import { IsString } from 'class-validator';
-import { Expose } from 'class-transformer';
+import type { Role } from '../../../../generated/prisma/client';
 
-export class LoginDto {
+export class LoginRequestDto {
     @IsString()
     username!: string;
 
     @IsString()
     password!: string;
+}
+
+interface UserResponseDto {
+    avatarUpdatedAt: string | null;
+    userId: number;
+    username: string;
+    nickname: string | null;
+    gender: number | null;
+    role: Role;
+    selfIntro: string | null;
+}
+
+export interface LoginResponseDto {
+    token: string;
+    message: string;
+    user: UserResponseDto;
 }
