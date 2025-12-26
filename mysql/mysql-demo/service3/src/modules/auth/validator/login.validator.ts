@@ -4,5 +4,5 @@ import { LoginRequestDto } from '../dto/login.dto';
 
 @injectable()
 export class LoginValidator extends BaseValidator {
-    dto = LoginRequestDto;
+  dto = LoginRequestDto;
 }

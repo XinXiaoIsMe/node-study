@@ -1,7 +1,7 @@
 export const MIDDLEWARES = {
-    CorsMiddleware: Symbol('CorsMiddleware')
+  CorsMiddleware: Symbol('CorsMiddleware'),
 } as const;
 
 export const TYPES = {
-    PrismaDb: 'PrismaDb'
+  PrismaDb: 'PrismaDb',
 } as const;
