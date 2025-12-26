@@ -4,10 +4,13 @@ import { validate } from 'class-validator';
 import { NextFunction, Request, Response } from 'express';
 import { HttpError } from '../../shared/errors';
 
+/**
+ * 校验参数
+ */
 export abstract class BaseValidator implements ExpressMiddleware {
     abstract dto: any;
 
-    async execute(req: Request, res: Response, next: NextFunction) {
+    async execute(req: Request, _res: Response, next: NextFunction) {
         const params = {
             ...(req.params ?? {}),
             ...(req.query ?? {}),

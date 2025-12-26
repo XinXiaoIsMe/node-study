@@ -2,6 +2,9 @@ import { ExpressMiddleware } from '@inversifyjs/http-express';
 import { injectable } from 'inversify';
 import type { Request, Response, NextFunction } from 'express';
 
+/**
+ * 处理CORS的中间件
+ */
 @injectable()
 export class CorsMiddleware implements ExpressMiddleware {
     execute(req: Request, res: Response, next: NextFunction) {
