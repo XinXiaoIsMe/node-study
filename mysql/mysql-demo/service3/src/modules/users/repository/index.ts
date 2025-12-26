@@ -1,3 +1,4 @@
+import type { UpdateUserProfileDto } from '../dto/user.dto';
 import type { IUserRepository } from './interfaces';
 import type { UserProfile } from './types';
 import type { PrismaDb } from '@/prisma/client';
@@ -28,4 +29,13 @@ export class UserRepository implements IUserRepository {
       },
     });
   }
+
+  updateUserProfile(userId: number, profile: UpdateUserProfileDto) {
+    return this.db.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: profile,
+    });
+  };
 }

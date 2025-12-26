@@ -11,3 +11,21 @@ export interface UserProfileDto {
     selfIntro: string | null;
   };
 }
+
+export interface UpdateUserProfileDto {
+  nickname?: string | null;
+  gender?: number | null;
+  selfIntro?: string | null;
+}
+
+export interface UpdateUserProfileResponse {
+  profile: {
+    id: string;
+    username: string;
+    nickname?: string | null;
+    gender: number | null;
+    selfIntro: string | null;
+    role: Role;
+    avatarUpdatedAt: string | null;
+  };
+}
