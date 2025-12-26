@@ -1,6 +1,6 @@
 import type { Prisma } from '@prisma/client';
 
-export type UserForLogin = Prisma.UserGetPayload<{
+export type UserProfile = Prisma.UserGetPayload<{
   select: {
     id: true;
     username: true;

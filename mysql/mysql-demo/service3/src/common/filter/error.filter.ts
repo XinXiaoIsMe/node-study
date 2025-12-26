@@ -20,6 +20,8 @@ export class GlobalErrorFilter implements ExpressErrorFilter {
       return;
     }
 
+    console.log(error);
+
     // 其余错误指定为内部服务错误
     res.status(500).json({
       success: false,

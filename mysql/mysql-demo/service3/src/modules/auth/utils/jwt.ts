@@ -1,5 +1,5 @@
 import type { Request } from 'express';
-import type { SignOptions } from 'jsonwebtoken';
+import type { JwtPayload, SignOptions } from 'jsonwebtoken';
 import { env } from '@config/env';
 import { jwtConfig } from '@config/jwt.config';
 import jwt from 'jsonwebtoken';
@@ -24,7 +24,7 @@ export function signAccessToken(userId: number) {
  */
 export function verifyToken(token: string) {
   try {
-    return jwt.verify(token, env.JWT_SECRET);
+    return jwt.verify(token, env.JWT_SECRET) as JwtPayload;
   }
   catch (e: unknown) {
     const { TokenExpiredError, JsonWebTokenError } = jwt;

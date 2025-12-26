@@ -1,15 +1,7 @@
-import type { Role } from '../../../../generated/prisma/client';
+import type { Role } from '@prisma/client';
 import { IsString } from 'class-validator';
 
-export class LoginRequestDto {
-  @IsString()
-  username!: string;
-
-  @IsString()
-  password!: string;
-}
-
-interface UserResponseDto {
+export interface UserResponseDto {
   avatarUpdatedAt: string | null;
   userId: number;
   username: string;
@@ -17,6 +9,14 @@ interface UserResponseDto {
   gender: number | null;
   role: Role;
   selfIntro: string | null;
+}
+
+export class LoginRequestDto {
+  @IsString()
+  username!: string;
+
+  @IsString()
+  password!: string;
 }
 
 export interface LoginResponseDto {
