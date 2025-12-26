@@ -13,6 +13,6 @@ export class UserController implements IUserController {
 
   @Get('/me')
   getCurrentUser(@Request() req: ExpressRequest) {
-    return this.userService.getUserInfo(req.user!.userId!);
+    return this.userService.getUserProfile(req.user!.userId!);
   }
 }
