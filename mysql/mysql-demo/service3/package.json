@@ -1,21 +1,23 @@
 {
   "name": "service3",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "type": "module",
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.15.0",
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "main": "index.js",
   "scripts": {
     "dev": "tsx --watch src/app.ts",
     "prisma:setup": "pnpm run prisma:generate && pnpm run prisma:migrate:dev && pnpm run prisma:seed",
     "prisma:init": "prisma init --datasource-provider mysql --output ../generated/prisma",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.15.0",
   "dependencies": {
     "@inversifyjs/http-core": "^4.8.0",
     "@inversifyjs/http-express": "^4.8.0",
@@ -31,10 +33,12 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "^6.7.3",
     "@types/express": "catalog:",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "catalog:",
     "dotenv": "^17.2.3",
+    "eslint": "^9.39.2",
     "prisma": "^7.1.0",
     "tsx": "catalog:",
     "typescript": "catalog:"
