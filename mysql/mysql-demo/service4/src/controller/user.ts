@@ -40,8 +40,7 @@ export class UserController implements IUserController {
     return formatResponse(data, '更新用户信息成功！', CanUpdateUserProfileRequestDto);
   }
 
-  @ApplyMiddleware(TYPES.AvatarParser)
-  @ApplyMiddleware(TYPES.Auth)
+  @ApplyMiddleware(TYPES.Auth, TYPES.AvatarParser)
   @Post('/me/avatar')
   async updateUserAvatar(@Request() req: ExpressRequest) {
     const userId: number = req.user!.userId;
