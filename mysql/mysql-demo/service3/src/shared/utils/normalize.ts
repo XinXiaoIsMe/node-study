@@ -1,4 +1,4 @@
-import type { User } from '../../../generated/prisma/client';
+import type { User } from '@db/client';
 
 export function normalizeGender(gender?: any) {
   const genderValue = Number(gender);

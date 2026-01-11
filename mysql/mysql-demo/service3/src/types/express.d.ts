@@ -5,5 +5,9 @@ declare global {
     interface Request {
       user?: JwtPayload;
     }
+
+    interface Response {
+      success: <T>(data: T, message?: string) => void;
+    }
   }
 }

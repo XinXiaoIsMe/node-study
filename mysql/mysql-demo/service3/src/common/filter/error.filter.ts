@@ -1,7 +1,7 @@
 import type { ExpressErrorFilter } from '@inversifyjs/http-express';
 import type { Request, Response } from 'express';
 import { CatchError } from '@inversifyjs/http-core';
-import { HttpError } from '../../shared/errors';
+import { HttpError } from '../errors';
 
 /**
  * 全局错误校验

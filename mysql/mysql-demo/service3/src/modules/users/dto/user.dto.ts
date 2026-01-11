@@ -1,31 +1,83 @@
-import type { Role } from '@prisma/client';
+import type { Role } from '@db/browser';
+import { Type } from 'class-transformer';
+import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-export interface UserProfileDto {
-  profile: {
-    avatarUpdatedAt: string | null;
-    userId: number;
-    username: string;
-    nickname: string | null;
-    gender: number | null;
-    role: Role;
-    selfIntro: string | null;
-  };
-}
-
-export interface UpdateUserProfileDto {
+export class UpdateUserProfileDto {
+  @IsOptional()
+  @IsString()
   nickname?: string | null;
+
+  @IsOptional()
+  @IsInt()
   gender?: number | null;
+
+  @IsOptional()
+  @IsString()
   selfIntro?: string | null;
 }
 
-export interface UpdateUserProfileResponse {
-  profile: {
-    id: string;
-    username: string;
-    nickname?: string | null;
-    gender: number | null;
-    selfIntro: string | null;
-    role: Role;
-    avatarUpdatedAt: string | null;
-  };
+export class UpdateUserProfileResponseDto {
+  @Type(() => UpdateUserProfileQueryDto)
+  profile!: UpdateUserProfileQueryDto;
+}
+
+export class UpdateUserProfileQueryDto {
+  @IsString()
+  id!: string;
+
+  @IsString()
+  username!: string;
+
+  @IsString()
+  @IsOptional()
+  nickname?: string | null;
+
+  @IsInt()
+  @IsOptional()
+  gender?: number | null;
+
+  @IsString()
+  @IsOptional()
+  selfIntro?: string | null;
+
+  @IsNotEmpty()
+  role!: Role;
+
+  @IsString()
+  avatarUpdatedAt!: string | null;
+}
+
+export class UpdateAvatarDto {
+  @IsNotEmpty()
+  avatar!: Uint8Array;
+}
+
+export class UpdateAvatarResponseDto {
+  @Type(() => UpdateAvatarProfileDto)
+  profile!: UpdateAvatarProfileDto;
+}
+
+export class UpdateAvatarProfileDto {
+  @IsString()
+  id!: string;
+
+  @IsString()
+  username!: string;
+
+  @IsOptional()
+  @IsString()
+  nickname?: string | null;
+
+  @IsOptional()
+  @IsInt()
+  gender!: number | null;
+
+  @IsString()
+  selfIntro!: string | null;
+
+  @IsNotEmpty()
+  role!: Role;
+
+  @IsString()
+  avatarUpdatedAt!: string | null;
 }

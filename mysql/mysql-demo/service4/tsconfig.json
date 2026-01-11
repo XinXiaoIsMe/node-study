@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "paths": {
+      "@/*": ["src/*"],
+      "@config/*": ["src/config/*"],
+      "@db/*": ["generated/prisma/*"],
+      "@dto": ["src/domain/dto/index.ts"],
+      "@dto/*": ["src/domain/dto/*"],
+      "@model": ["src/domain/model/index.ts"],
+      "@model/*": ["src/domain/model/*"],
+      "@utils": ["src/utils/index.ts"],
+      "@utils/*": ["src/utils/*"],
+      "@container": ["src/container/index.ts"],
+      "@container/*": ["src/container/*"],
+      "@interface": ["src/interface/index.ts"],
+      "@interface/controller": ["src/interface/controller/index.ts"],
+      "@interface/service": ["src/interface/service/index.ts"],
+      "@interface/repository": ["src/interface/repository/index.ts"],
+      "@types": ["src/types/index.ts"],
+      "@common/*": ["src/common/*"]
+    },
+    "strict": true,
+    "outDir": "dist",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  }
+}

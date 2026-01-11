@@ -18,9 +18,12 @@ interface LoginForm {
 }
 
 interface LoginPayload {
-  user?: Partial<UserProfile> & { id?: number }
-  token?: string
+  data: {
+    user?: Partial<UserProfile> & { id?: number }
+    token?: string
+  }
   message?: string
+  code: number
 }
 
 const auth = useAuthStore()
@@ -68,13 +71,15 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
-    const { data: payload } = await http.post<LoginPayload>('/login', {
+    const { data } = await http.post<LoginPayload>('/login', {
       username: loginForm.username,
       password: loginForm.password,
     })
 
+    const payload = data.data;
+
     if (!payload?.user) {
-      ElMessage.error(payload?.message || '登录失败，请稍后重试')
+      ElMessage.error(data?.message || '登录失败，请稍后重试')
       return
     }
 

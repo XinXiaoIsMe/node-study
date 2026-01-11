@@ -10,7 +10,7 @@
       "@/*": ["src/*"],
       "@config/*": ["src/config/*"],
       "@shared/*": ["src/shared/*"],
-      "@prisma/*": ["generated/prisma/*"]
+      "@db/*": ["generated/prisma/*"]
     },
     "strict": true,
     "outDir": "dist",

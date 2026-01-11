@@ -1,4 +1,4 @@
-import type { Role } from '@prisma/client';
+import type { Role } from '@db/client';
 import { IsString } from 'class-validator';
 
 export interface UserResponseDto {

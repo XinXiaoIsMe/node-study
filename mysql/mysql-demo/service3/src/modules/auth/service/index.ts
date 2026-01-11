@@ -1,7 +1,7 @@
 import type { LoginResponseDto } from '../dto/login.dto';
 import type { IAuthRepository } from '../repository/interfaces';
 import type { IAuthService } from './interfaces';
-import { UnauthorizedError } from '@shared/errors';
+import { UnauthorizedError } from '@/common/errors';
 import bcrypt from 'bcryptjs';
 import { inject, injectable } from 'inversify';
 import { getAvatarUpdatedTime, normalizeGender, normalizeRole } from '../../../shared/utils';

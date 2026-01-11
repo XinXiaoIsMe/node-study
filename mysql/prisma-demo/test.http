@@ -1,5 +1,5 @@
-# GET http://localhost:3001 HTTP/1.1
-# Content-Type: application/json
+GET http://localhost:3001 HTTP/1.1
+Content-Type: application/json
 
 # GET http://localhost:3001/user/1 HTTP/1.1
 # Content-Type: application/json
@@ -21,9 +21,9 @@
 #     "email": "xmg2@gmail.com"
 # }
 
-POST http://localhost:3001/delete HTTP/1.1
-Content-Type: application/json
+# POST http://localhost:3001/delete HTTP/1.1
+# Content-Type: application/json
 
-{
-    "id": 3
-}
+# {
+#     "id": 3
+# }

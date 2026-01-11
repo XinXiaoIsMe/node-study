@@ -1,6 +1,6 @@
 import type { ExpressMiddleware } from '@inversifyjs/http-express';
 import type { NextFunction, Request, Response } from 'express';
-import { BadRequestError } from '@shared/errors';
+import { BadRequestError } from '@/common/errors';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 

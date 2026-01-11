@@ -29,13 +29,17 @@
     "express": "catalog:",
     "inversify": "^7.10.6",
     "jsonwebtoken": "^9.0.3",
+    "multer": "catalog:",
+    "mysql2": "catalog:",
     "reflect-metadata": "^0.2.2",
+    "sharp": "catalog:",
     "zod": "^4.2.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.7.3",
     "@types/express": "catalog:",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "catalog:",
     "@types/node": "catalog:",
     "dotenv": "^17.2.3",
     "eslint": "^9.39.2",

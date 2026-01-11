@@ -1,6 +1,6 @@
 import type { ExpressMiddleware } from '@inversifyjs/http-express';
 import type { NextFunction, Request, Response } from 'express';
-import { UnauthorizedError } from '@shared/errors';
+import { UnauthorizedError } from '@/common/errors';
 import { injectable } from 'inversify';
 import { extractToken, isWhitelisted, verifyToken } from '../utils';
 

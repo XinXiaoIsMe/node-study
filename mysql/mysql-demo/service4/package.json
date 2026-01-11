@@ -1,0 +1,52 @@
+{
+  "name": "service3",
+  "type": "module",
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.15.0",
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx --watch src/app.ts",
+    "prisma:setup": "pnpm run prisma:generate && pnpm run prisma:migrate:dev && pnpm run prisma:seed",
+    "prisma:init": "prisma init --datasource-provider mysql --output ../generated/prisma",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:seed": "prisma db seed",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
+  },
+  "dependencies": {
+    "@inversifyjs/http-core": "^4.8.0",
+    "@inversifyjs/http-express": "^4.8.0",
+    "@prisma/adapter-mariadb": "^7.1.0",
+    "@prisma/client": "^7.1.0",
+    "bcryptjs": "^3.0.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
+    "cors": "^2.8.5",
+    "express": "catalog:",
+    "inversify": "^7.10.6",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "catalog:",
+    "mysql2": "catalog:",
+    "reflect-metadata": "^0.2.2",
+    "sharp": "catalog:",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^6.7.3",
+    "@types/cors": "^2.8.19",
+    "@types/express": "catalog:",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "catalog:",
+    "@types/node": "catalog:",
+    "dotenv": "^17.2.3",
+    "eslint": "^9.39.2",
+    "prisma": "^7.1.0",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

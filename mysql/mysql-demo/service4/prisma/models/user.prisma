@@ -1,0 +1,36 @@
+model User {
+    id            Int            @id @default(autoincrement())
+    // 登录名
+    username      String         @unique @db.VarChar(32)
+    // 昵称
+    nickname      String?        @db.VarChar(32)
+    // 性别 1-男 2-女
+    gender        Int?           @default(1) @db.TinyInt
+    // 密码
+    password      String         @db.VarChar(255)
+    // 头像
+    avatar        Bytes?         @db.LongBlob
+    // 头像的mime类型
+    avatarMime    String?        @map("avatar_mime") @db.VarChar(64)
+    // 头像大小字节
+    avatarSize    Int?           @map("avatar_size") @db.UnsignedInt
+    // 自我介绍
+    selfIntro     String?        @map("self_intro") @db.VarChar(255)
+    // 角色 user: 普通用户 admin: 管理员
+    role          Role           @default(user)
+    // 创建时间
+    createTime    DateTime       @default(now()) @map("create_time")
+    // 更新时间
+    updateTime    DateTime       @updatedAt @map("update_time")
+    // refreshToken
+    refreshTokens RefreshToken[]
+
+    @@map("users")
+}
+
+enum Role {
+    // 普通用户
+    user
+    // 管理员
+    admin
+}

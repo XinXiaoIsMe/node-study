@@ -17,7 +17,7 @@ import type { Role } from "../stores/auth";
 import { useAuthStore } from "../stores/auth";
 
 interface ProfileResponse {
-  profile: {
+  data: {
     id: number;
     username: string;
     nickname: string | null;
@@ -122,7 +122,7 @@ const rules: FormRules<typeof formModel> = {
   ],
 };
 
-const applyProfile = (payload: ProfileResponse["profile"]) => {
+const applyProfile = (payload: ProfileResponse["data"]) => {
   const normalizedGender =
     payload.gender && payload.gender > 0 ? payload.gender : null;
 
@@ -151,8 +151,8 @@ const fetchProfile = async () => {
   loadingProfile.value = true;
   try {
     const { data } = await http.get<ProfileResponse>("/users/me");
-    if (data.profile) {
-      applyProfile(data.profile);
+    if (data.data) {
+      applyProfile(data.data);
     }
   } catch (error) {
     console.error("fetch profile failed", error);
@@ -179,8 +179,8 @@ const handleSaveProfile = async () => {
       gender: formModel.gender,
       selfIntro: formModel.selfIntro.trim() || null,
     });
-    if (data.profile) {
-      applyProfile(data.profile);
+    if (data.data) {
+      applyProfile(data.data);
       ElMessage.success("资料已更新");
     }
   } catch (error) {
@@ -259,8 +259,8 @@ const handleAvatarConfirm = async ({
       "/users/me/avatar",
       formData
     );
-    if (data.profile) {
-      applyProfile(data.profile);
+    if (data.data) {
+      applyProfile(data.data);
       ElMessage.success("头像已更新");
     }
   } catch (error) {
