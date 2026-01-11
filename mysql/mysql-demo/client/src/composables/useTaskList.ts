@@ -45,10 +45,10 @@ export function useTaskList(statusFilter: Task['status']) {
   const fetchTasks = async () => {
     loading.value = true
     try {
-      const { data } = await http.get<{ tasks: Task[] }>('/tasks', {
+      const { data } = await http.get<{ data: Task[] }>('/tasks', {
         params: { status: statusFilter },
       })
-      tasks.value = data.tasks.map(item => ({
+      tasks.value = data.data.map(item => ({
         ...item,
         startDate: formatDateTime(item.startDate),
         dueDate: formatDateTime(item.dueDate)

@@ -11,4 +11,7 @@ export const TYPES = {
   UserService: Symbol('user/UserService'),
   UserRepository: Symbol('user/UserRepository'),
   AvatarParser: Symbol('user/AvatarParser'),
+  // task
+  TaskService: Symbol('task/TaskService'),
+  TaskRepository: Symbol('task/TaskRepository'),
 } as const;

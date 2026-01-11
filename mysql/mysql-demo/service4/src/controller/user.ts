@@ -6,7 +6,6 @@ import { ApplyMiddleware, Body, Controller, Delete, Get, Params, Post, Put, Quer
 import { inject } from 'inversify';
 import { TYPES } from '@/container/types';
 import { CanUpdateUserProfileRequestDto, CreateUserRequestDto, DeleteUserDto, GetUserResponseDto, UpdateUserAvatarResponseDto, UpdateUserProfileRequestDto, UpdateUserProfileResponseDto } from '@/domain/dto';
-
 import { formatResponse, toDto } from '@/utils';
 
 @Controller('/api/users')

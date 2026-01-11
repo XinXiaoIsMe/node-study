@@ -1,9 +1,10 @@
 import type { Prisma, User } from '@db/client';
 import type { IAuthRepository } from '@/interface';
 import type { PrismaDb } from '@/prisma/client';
-import { inject } from 'inversify';
+import { inject, injectable } from 'inversify';
 import { TYPES } from '@/container/types';
 
+@injectable()
 export class AuthRepository implements IAuthRepository {
   constructor(
     @inject(TYPES.PrismaDb) private readonly _db: PrismaDb,

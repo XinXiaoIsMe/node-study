@@ -1,7 +1,7 @@
 import type { UserCreateInput } from '@db/models';
 import type { AvatarInfoModel, CanUpdateUserProfileModel, CreateUserParamModel, GetUserModel, UpdatedUserProfileModel, UserAvatarInfo } from '@/domain/model';
 import type { IUserRepository, IUserService } from '@/interface';
-import { inject } from 'inversify';
+import { inject, injectable } from 'inversify';
 import sharp from 'sharp';
 import { BadRequestError, HttpError, UnauthorizedError } from '@/common/errors';
 import { TYPES } from '@/container/types';
@@ -11,6 +11,7 @@ import { hashPassword, parseBase64Avatar, parseToken } from '@/utils';
 // 最大图片尺寸
 const MAX_BASE64_AVATAR_SIZE = 2 * 1024 * 1024;
 
+@injectable()
 export class UserService implements IUserService {
   constructor(
     @inject(TYPES.UserRepository) private readonly _userRepo: IUserRepository,

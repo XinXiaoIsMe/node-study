@@ -1,13 +1,14 @@
-import type { IAuthRepository, IAuthService, IRefreshTokenRepository, IUserRepository, IUserService } from '@/interface';
+import type { IAuthRepository, IAuthService, IRefreshTokenRepository, ITaskRepository, ITaskService, IUserRepository, IUserService } from '@/interface';
+
 import type { PrismaDb } from '@/prisma/client';
 import { Container } from 'inversify';
-import { AuthController, UserController } from '@/controller';
+import { AuthController, TaskController, UserController } from '@/controller';
 import { GlobalErrorFilter } from '@/filter';
 import { AdminValidatorMiddleware, AuthMiddleware, AvatarParserMiddle, CorsMiddleware } from '@/middleware';
 import { prismaDb } from '@/prisma/instance';
-import { AuthRepository, UserRepository } from '@/repository';
+import { AuthRepository, TaskRepository, UserRepository } from '@/repository';
 import { RefreshTokenRepository } from '@/repository/token';
-import { AuthService, UserService } from '@/service';
+import { AuthService, TaskService, UserService } from '@/service';
 import { TYPES } from './types';
 
 const container = new Container();
@@ -36,6 +37,11 @@ function bindContainer(container: Container) {
   container.bind(UserController).toSelf();
   container.bind<IUserService>(TYPES.UserService).to(UserService);
   container.bind<IUserRepository>(TYPES.UserRepository).to(UserRepository);
+
+  // task
+  container.bind(TaskController).toSelf();
+  container.bind<ITaskService>(TYPES.TaskService).to(TaskService);
+  container.bind<ITaskRepository>(TYPES.TaskRepository).to(TaskRepository);
 }
 
 export {

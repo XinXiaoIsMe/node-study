@@ -55,7 +55,7 @@ function ymd(d: Date) {
 async function fetchTasksByRange() {
   if (!panelStartDate.value || !panelEndDate.value) return
   try {
-    const { data } = await http.post<{ tasks: Task[] }>(
+    const { data } = await http.post<{ data: Task[] }>(
       '/tasks/range',
       {
         startDate: panelStartDate.value,
@@ -66,7 +66,7 @@ async function fetchTasksByRange() {
     const startObj = panelStart.value ? atStartOfDay(panelStart.value) : null
     const endObj = panelEnd.value ? atStartOfDay(panelEnd.value) : null
 
-    for (const t of data.tasks || []) {
+    for (const t of data.data || []) {
       const hasStart = !!t.startDate
       const hasDue = !!t.dueDate
 

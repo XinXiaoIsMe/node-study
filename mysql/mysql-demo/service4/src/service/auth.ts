@@ -1,17 +1,15 @@
-import type { IAuthRepository, IAuthService, IRefreshTokenRepository } from '@interface';
+import type { IAuthRepository, IAuthService } from '@interface';
 import bcrypt from 'bcryptjs';
-import { inject } from 'inversify';
+import { inject, injectable } from 'inversify';
 import { HttpError } from '@/common/errors';
 import { TYPES } from '@/container/types';
 import { loginUserProfileSelect } from '@/domain/model';
 import { signAccessToken } from '@/utils';
 
-export * from './auth';
-
+@injectable()
 export class AuthService implements IAuthService {
   constructor(
     @inject(TYPES.AuthRepository) private readonly _authRepo: IAuthRepository,
-    @inject(TYPES.RefreshTokenRepository) private readonly _refreshTokenRepo: IRefreshTokenRepository,
   ) {}
 
   async login(username: string, password: string) {

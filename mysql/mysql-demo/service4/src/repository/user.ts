@@ -1,9 +1,10 @@
 import type { Prisma, User } from '@db/client';
 import type { IUserRepository } from '@/interface';
 import type { PrismaDb } from '@/prisma/client';
-import { inject } from 'inversify';
+import { inject, injectable } from 'inversify';
 import { TYPES } from '@/container/types';
 
+@injectable()
 export class UserRepository implements IUserRepository {
   constructor(
     @inject(TYPES.PrismaDb) private readonly _db: PrismaDb,
@@ -72,7 +73,7 @@ export class UserRepository implements IUserRepository {
     return await this._db.prisma.user.findMany();
   }
 
-  createUser(data: Prisma.UserCreateInput): Promise<User | null> {
+  createUser(data: Prisma.UserCreateInput): Promise<User> {
     return this._db.prisma.user.create({
       data,
     });
