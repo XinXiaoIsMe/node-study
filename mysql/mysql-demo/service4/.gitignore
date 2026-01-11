@@ -1,6 +1,6 @@
 node_modules
-# Keep environment variables out of version control
-.env
+# Keep environment variables out of version control 通常情况下env文件不放在仓库中，但是这里为了方便还是注释掉
+# .env
 
 /generated/prisma
 
