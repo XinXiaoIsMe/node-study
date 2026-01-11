@@ -14,7 +14,18 @@ export class SuccessResponse<T> {
   }
 }
 
-export function formatResponse<T>(data: T, message?: string, DtoClass?: ClassConstructor<T>) {
-  const responseData = DtoClass ? toDto(DtoClass, data) : data;
+export function formatResponse<TData>(data: TData, message?: string): SuccessResponse<TData>;
+export function formatResponse<TDto, TData>(
+  data: ReadonlyArray<TData>,
+  message: string | undefined,
+  DtoClass: ClassConstructor<TDto>,
+): SuccessResponse<TDto[]>;
+export function formatResponse<TDto, TData>(
+  data: TData,
+  message: string | undefined,
+  DtoClass: ClassConstructor<TDto>,
+): SuccessResponse<TDto>;
+export function formatResponse<TDto>(data: unknown, message?: string, DtoClass?: ClassConstructor<TDto>) {
+  const responseData = DtoClass ? toDto(DtoClass, data as never) : data;
   return SuccessResponse.wrap(responseData, message);
 }

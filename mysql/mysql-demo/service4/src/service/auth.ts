@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { inject } from 'inversify';
 import { HttpError } from '@/common/errors';
 import { TYPES } from '@/container/types';
+import { loginUserProfileSelect } from '@/domain/model';
 import { signAccessToken } from '@/utils';
 
 export * from './auth';
@@ -14,7 +15,7 @@ export class AuthService implements IAuthService {
   ) {}
 
   async login(username: string, password: string) {
-    const user = await this._authRepo.findByUsername(username);
+    const user = await this._authRepo.findByUsername(username, loginUserProfileSelect);
     if (!user) {
       throw new HttpError(200, {
         code: 0,

@@ -9,4 +9,5 @@ export const TYPES = {
   // user
   UserService: Symbol('user/UserService'),
   UserRepository: Symbol('user/UserRepository'),
+  AvatarParser: Symbol('user/AvatarParser'),
 } as const;

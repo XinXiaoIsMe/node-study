@@ -57,3 +57,12 @@ export function extractToken(req: Request) {
     return null;
   return auth.slice(7);
 }
+
+/**
+ * 解析jwt
+ * @param token token字符串
+ */
+export function parseJwt(token: string): JwtPayload | null {
+  console.log(token);
+  return jwt.decode(token) as JwtPayload;
+}

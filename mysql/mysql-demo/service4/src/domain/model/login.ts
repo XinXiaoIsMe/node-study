@@ -14,14 +14,16 @@ export interface LoginModel {
   user: UserProfile;
 }
 
+export const loginUserProfileSelect = {
+  id: true,
+  username: true,
+  password: true,
+  nickname: true,
+  gender: true,
+  role: true,
+  selfIntro: true,
+} satisfies Prisma.UserSelect;
+
 export type LoginUserProfile = Prisma.UserGetPayload<{
-  select: {
-    id: true;
-    username: true;
-    password: true;
-    nickname: true;
-    gender: true;
-    role: true;
-    selfIntro: true;
-  };
+  select: typeof loginUserProfileSelect;
 }>;

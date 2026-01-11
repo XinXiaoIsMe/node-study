@@ -17,14 +17,15 @@ interface CreateUserForm {
   nickname: string;
   role: Role;
   gender: number | null;
-  self_intro: string | null;
+  selfIntro: string | null;
 }
 
 interface CreateUserResponse {
-  user?: {
-    username?: string;
+  data: {
+    username: string;
   };
-  message?: string;
+  message: string;
+  success: boolean;
 }
 
 const auth = useAuthStore();
@@ -42,7 +43,7 @@ const createForm = reactive<CreateUserForm>({
   nickname: "",
   role: "user",
   gender: null,
-  self_intro: null
+  selfIntro: null
 });
 
 const formRef = ref<FormInstance>();
@@ -143,7 +144,7 @@ const resetForm = () => {
   createForm.nickname = "";
   createForm.role = "user";
   createForm.gender = null;
-  createForm.self_intro = null;
+  createForm.selfIntro = null;
   resetAvatarState();
 };
 
@@ -242,13 +243,20 @@ const handleCreateUser = async () => {
 
   loading.value = true;
   try {
-    const { data } = await http.post<CreateUserResponse>("/users", {
+    const res = await http.post<CreateUserResponse>("/users", {
       ...createForm,
       avatar: avatarDataUrl.value
     });
 
+    const { success, message, data } = res.data;
+
+    if (!success) {
+      ElMessage.error(message);
+      return;
+    }
+
     ElMessage.success(
-      `用户 ${data?.user?.username || createForm.username} 创建成功`
+      `用户 ${data.username || createForm.username} 创建成功`
     );
     resetForm();
   } catch (error) {
@@ -452,9 +460,9 @@ watch(
               </el-form-item>
             </el-col>
             <el-col>
-              <el-form-item label="自我介绍" prop="self_intro">
+              <el-form-item label="自我介绍" prop="selfIntro">
                 <el-input
-                  v-model="createForm.self_intro"
+                  v-model="createForm.selfIntro"
                   type="textarea"
                   :rows="2"
                 />

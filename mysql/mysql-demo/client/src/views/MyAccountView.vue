@@ -33,6 +33,7 @@ const auth = useAuthStore();
 const loadingProfile = ref(true);
 const savingProfile = ref(false);
 const avatarUploading = ref(false);
+const updateId = ref(0);
 
 const profile = reactive({
   username: "",
@@ -105,12 +106,12 @@ const avatarUrl = computed(() => {
   if (localAvatarPreview.value) {
     return localAvatarPreview.value;
   }
-  if (!profile.avatarUpdatedAt || !auth.state.token) {
+  if (!auth.state.token) {
     return null;
   }
   const params = new URLSearchParams({
-    ts: profile.avatarUpdatedAt,
     token: auth.state.token,
+    ts: new Date().toISOString(),
   });
   return `${API_BASE}/users/me/avatar?${params.toString()}`;
 });
@@ -261,6 +262,7 @@ const handleAvatarConfirm = async ({
     );
     if (data.data) {
       applyProfile(data.data);
+      updateId.value ++;
       ElMessage.success("头像已更新");
     }
   } catch (error) {
@@ -312,6 +314,7 @@ watch(cropperVisible, (value) => {
               <el-avatar
                 :size="112"
                 shape="square"
+                :key="updateId"
                 :src="avatarUrl || undefined"
               >
                 {{ profile.nickname || profile.username }}

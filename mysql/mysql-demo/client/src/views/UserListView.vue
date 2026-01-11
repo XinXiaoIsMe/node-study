@@ -3,14 +3,19 @@
     <el-table v-loading="loading" :data="users">
       <el-table-column label="头像">
         <template #default="{ row }">
-          <img style="width: 40px; height: 40px" :src="row.avatar" />
+          <el-avatar
+            :size="40"
+            :src="row.avatar || undefined"
+          >
+            {{ getAvatarText(row) }}
+          </el-avatar>
         </template>
       </el-table-column>
       <el-table-column prop="username" label="名称"></el-table-column>
       <el-table-column prop="nickname" label="昵称"></el-table-column>
       <el-table-column prop="normalizedGender" label="性别"></el-table-column>
       <el-table-column prop="normalizedRole" label="角色"></el-table-column>
-      <el-table-column prop="self_intro" label="自我介绍"></el-table-column>
+      <el-table-column prop="selfIntro" label="自我介绍"></el-table-column>
       <el-table-column label="操作">
         <template #default="{ row }">
           <el-icon @click="handleEditUser(row)">
@@ -62,8 +67,8 @@
           <el-option label="普通用户" value="user"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="自我介绍" prop="self_intro">
-        <el-input v-model="editForm.self_intro" type="textarea" :rows="2" />
+      <el-form-item label="自我介绍" prop="selfIntro">
+        <el-input v-model="editForm.selfIntro" type="textarea" :rows="2" />
       </el-form-item>
     </el-form>
     <template #footer>
@@ -83,11 +88,11 @@ import AppLayout from "../components/AppLayout.vue";
 import { useAuthStore } from "../stores/auth";
 
 interface User {
-  id: number;
+  userId: number;
   username: string;
   nickname: string | null;
   gender: number | null;
-  self_intro: string | null;
+  selfIntro: string | null;
   role: Role;
   avatar_mime: string | null;
   avatar_size: number | null;
@@ -102,11 +107,11 @@ interface UserRow extends User {
 }
 
 interface EditForm {
-  id: number | null,
+  userId: number | null,
   username: string;
   nickname: string | null;
   gender: number | null;
-  self_intro: string | null;
+  selfIntro: string | null;
   role: Role;
 }
 
@@ -115,11 +120,11 @@ const loading = ref(false);
 const API_BASE = (http.defaults.baseURL ?? "").replace(/\/$/, "");
 const auth = useAuthStore();
 const editForm = ref<EditForm>({
-  id: null,
+  userId: null,
   username: '',
   nickname: '',
   gender: null,
-  self_intro: '',
+  selfIntro: '',
   role: 'user'
 });
 const editFormVisible = ref(false);
@@ -148,11 +153,18 @@ onMounted(() => {
   getUsers();
 });
 
+function getAvatarText (row: User) {
+  const name = row?.nickname || row?.username || '游客';
+  return name.charAt(0);
+}
+
 async function getUsers() {
   try {
     loading.value = true;
-    const res = await http.get<User[]>("/users");
-    users.value = res.data.map((row) => ({
+    const res = await http.get<{
+      data: User[]
+    }>("/users");
+    users.value = res.data.data.map((row) => ({
       ...row,
       avatar: getAvatar(row),
       normalizedGender: normalizeGender(row.gender),
@@ -168,11 +180,11 @@ async function getUsers() {
 async function handleEditUser(row: UserRow) {
   editFormVisible.value = true;
   editForm.value = {
-    id: row.id,
+    userId: row.userId,
     username: row.username,
     nickname: row.nickname,
     gender: row.gender,
-    self_intro: row.self_intro,
+    selfIntro: row.selfIntro,
     role: row.role
   };
 }
@@ -188,12 +200,12 @@ async function handleConfirmEdit () {
   isEditing.value = true;
   try {
     const res = await http.put<{ message: string; }>('/users', {
-      userId: editForm.value.id,
+      userId: editForm.value.userId,
       username: editForm.value.username,
       nickname: editForm.value.nickname,
       gender: editForm.value.gender,
       role: editForm.value.role,
-      self_intro: editForm.value.self_intro,
+      selfIntro: editForm.value.selfIntro,
     });
     getUsers();
     editFormVisible.value = false;
@@ -208,7 +220,7 @@ async function handleConfirmEdit () {
 async function handleDeleteUser(row: UserRow) {
   try {
     loading.value = true;
-    const res = await http.delete<{ message: string }>(`/users/${row.id}`);
+    const res = await http.delete<{ message: string }>(`/users/${row.userId}`);
     await getUsers();
     ElMessage.success(res.data.message);
   } catch (e) {
@@ -219,12 +231,10 @@ async function handleDeleteUser(row: UserRow) {
 }
 
 function getAvatar(row: User) {
-  const version = row.avatarUpdatedAt;
-  if (!version) return null;
-
   const params = new URLSearchParams({
-    userId: String(row.id),
+    userId: String(row.userId),
     token: auth.state.token,
+    ts: new Date().toISOString()
   });
   return `${API_BASE}/users/me/avatar?${params.toString()}`;
 }

@@ -78,13 +78,12 @@ const displayName = computed(
 )
 
 const avatarUrl = computed(() => {
-  const version = auth.state.user?.avatarUpdatedAt
   const token = auth.state.token
-  if (!version || !token) {
+  if (!token) {
     return null
   }
   const params = new URLSearchParams({
-    ts: version,
+    ts: new Date().toISOString(),
     token,
   })
   return `${API_BASE}/users/me/avatar?${params.toString()}`
