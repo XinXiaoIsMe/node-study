@@ -3,7 +3,7 @@ import type { PrismaDb } from '@/prisma/client';
 import { Container } from 'inversify';
 import { AuthController, UserController } from '@/controller';
 import { GlobalErrorFilter } from '@/filter';
-import { AuthMiddleware, AvatarParserMiddle, CorsMiddleware } from '@/middleware';
+import { AdminValidatorMiddleware, AuthMiddleware, AvatarParserMiddle, CorsMiddleware } from '@/middleware';
 import { prismaDb } from '@/prisma/instance';
 import { AuthRepository, UserRepository } from '@/repository';
 import { RefreshTokenRepository } from '@/repository/token';
@@ -20,6 +20,7 @@ function bindContainer(container: Container) {
   // middlewares
   container.bind<CorsMiddleware>(TYPES.Cors).to(CorsMiddleware).inSingletonScope();
   container.bind<AuthMiddleware>(TYPES.Auth).to(AuthMiddleware).inSingletonScope();
+  container.bind<AdminValidatorMiddleware>(TYPES.AdminValidator).to(AdminValidatorMiddleware).inSingletonScope();
   container.bind<AvatarParserMiddle>(TYPES.AvatarParser).to(AvatarParserMiddle).inSingletonScope();
 
   // filters

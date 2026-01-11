@@ -31,7 +31,7 @@ export class AuthService implements IAuthService {
       });
     }
 
-    const token = signAccessToken(user.id);
+    const token = signAccessToken(user.id, user.role);
 
     return {
       token,

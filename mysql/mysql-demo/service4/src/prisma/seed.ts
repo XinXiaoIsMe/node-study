@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
 import process from 'node:process';
 import { env } from '@config/env';
+import { PrismaClient, Role } from '@db/client';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '../../generated/prisma/client';
 
 const adapter = new PrismaMariaDb({
   host: env.DATABASE_HOST,
@@ -28,7 +28,7 @@ async function main() {
   const adminUsername = 'admin';
   const adminPassword = '123456'; // dev/test 默认密码
   const adminNickname = '超级管理员';
-  const adminRole = 'admin';
+  const adminRole = Role.admin;
 
   const admin = await prisma.user.upsert({
     where: { username: adminUsername },

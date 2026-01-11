@@ -6,7 +6,7 @@ import sharp from 'sharp';
 import { BadRequestError, HttpError, UnauthorizedError } from '@/common/errors';
 import { TYPES } from '@/container/types';
 import { updatedUserProfileSelect, userAvatarInfoSelect, userProfileSelect } from '@/domain/model';
-import { hashPassword, parseBase64Avatar, parseJwt } from '@/utils';
+import { hashPassword, parseBase64Avatar, parseToken } from '@/utils';
 
 // 最大图片尺寸
 const MAX_BASE64_AVATAR_SIZE = 2 * 1024 * 1024;
@@ -123,7 +123,7 @@ export class UserService implements IUserService {
   }
 
   async getUserAvatar(token: string, id?: number): Promise<UserAvatarInfo> {
-    const jwtInfo = parseJwt(token);
+    const jwtInfo = parseToken(token);
     if (!jwtInfo) {
       throw new UnauthorizedError({
         message: '没有访问权限!',

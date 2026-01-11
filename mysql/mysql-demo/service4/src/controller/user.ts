@@ -69,6 +69,7 @@ export class UserController implements IUserController {
       .send(Buffer.isBuffer(avatar) ? avatar : Buffer.from(avatar));
   }
 
+  @ApplyMiddleware(TYPES.AdminValidator)
   @ApplyMiddleware(TYPES.Auth)
   @Get('/')
   async getUserList() {

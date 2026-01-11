@@ -2,6 +2,7 @@ export const TYPES = {
   PrismaDb: Symbol('PrismaDb'),
   Cors: Symbol('cors'),
   Auth: Symbol('auth'),
+  AdminValidator: Symbol('AdminValidator'),
   // auth
   AuthService: Symbol('auth/AuthService'),
   AuthRepository: Symbol('auth/AuthRepository'),

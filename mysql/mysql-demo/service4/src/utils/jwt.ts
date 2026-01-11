@@ -1,3 +1,4 @@
+import type { Role } from '@db/enums';
 import type { Request } from 'express';
 import type { JwtPayload, SignOptions } from 'jsonwebtoken';
 import { env } from '@config/env';
@@ -10,9 +11,9 @@ import { UnauthorizedError } from '@/common/errors';
  * @param userId 用户id
  * @returns token
  */
-export function signAccessToken(userId: number) {
+export function signAccessToken(userId: number, role: Role) {
   return jwt.sign(
-    { userId },
+    { userId, role },
     env.JWT_SECRET,
     { expiresIn: jwtConfig.accessTokenExpiresIn } as SignOptions,
   );
@@ -62,7 +63,6 @@ export function extractToken(req: Request) {
  * 解析jwt
  * @param token token字符串
  */
-export function parseJwt(token: string): JwtPayload | null {
-  console.log(token);
+export function parseToken(token: string): JwtPayload | null {
   return jwt.decode(token) as JwtPayload;
 }
