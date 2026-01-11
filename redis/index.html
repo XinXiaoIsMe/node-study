@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redis Todo Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #0b1220;
+        --card: rgba(255, 255, 255, 0.06);
+        --card2: rgba(255, 255, 255, 0.09);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.65);
+        --line: rgba(255, 255, 255, 0.14);
+        --brand: #7c5cff;
+        --danger: #ff4d6d;
+        --ok: #27e1a1;
+        --shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+        --radius: 14px;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+          monospace;
+        --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+          "Segoe UI Emoji";
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        background: radial-gradient(900px 500px at 30% 10%, rgba(124, 92, 255, 0.35), transparent 60%),
+          radial-gradient(900px 500px at 70% 0%, rgba(39, 225, 161, 0.18), transparent 55%), var(--bg);
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        padding: 28px 16px;
+      }
+
+      .app {
+        width: min(780px, 100%);
+        background: linear-gradient(180deg, var(--card), rgba(255, 255, 255, 0.04));
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .header {
+        padding: 18px 18px 14px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .title {
+        margin: 0;
+        font-weight: 750;
+        letter-spacing: 0.2px;
+        font-size: 18px;
+      }
+
+      .meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.03);
+        user-select: none;
+      }
+
+      .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: var(--muted);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06) inset;
+      }
+
+      .dot.server {
+        background: var(--ok);
+      }
+
+      .dot.unavailable {
+        background: var(--danger);
+      }
+
+      .content {
+        padding: 16px 18px 18px;
+      }
+
+      form.add {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+      }
+
+      .input {
+        width: 100%;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text);
+        border-radius: 12px;
+        padding: 12px 12px;
+        outline: none;
+        transition: border-color 120ms ease;
+      }
+
+      .input:focus {
+        border-color: rgba(124, 92, 255, 0.7);
+      }
+
+      button {
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text);
+        border-radius: 12px;
+        padding: 10px 12px;
+        cursor: pointer;
+        transition: transform 80ms ease, border-color 120ms ease, background 120ms ease;
+      }
+
+      button:hover {
+        border-color: rgba(255, 255, 255, 0.28);
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+
+      button.primary {
+        border-color: rgba(124, 92, 255, 0.55);
+        background: rgba(124, 92, 255, 0.18);
+      }
+
+      button.danger {
+        border-color: rgba(255, 77, 109, 0.55);
+        background: rgba(255, 77, 109, 0.14);
+      }
+
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .toolbar {
+        margin-top: 12px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+
+      .filters {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .filters button {
+        padding: 8px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .filters button[aria-pressed="true"] {
+        color: var(--text);
+        border-color: rgba(124, 92, 255, 0.6);
+        background: rgba(124, 92, 255, 0.16);
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .list {
+        margin: 14px 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 10px;
+      }
+
+      .item {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: center;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .toggle {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--brand);
+        cursor: pointer;
+      }
+
+      .text {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .item.completed .text {
+        text-decoration: line-through;
+        opacity: 0.7;
+      }
+
+      .delete {
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        font-size: 18px;
+        line-height: 18px;
+        display: inline-grid;
+        place-items: center;
+      }
+
+      .delete:hover {
+        border-color: rgba(255, 77, 109, 0.6);
+        background: rgba(255, 77, 109, 0.14);
+      }
+
+      .edit {
+        display: none;
+        width: 100%;
+        font: inherit;
+        border: 1px solid rgba(124, 92, 255, 0.65);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text);
+        border-radius: 10px;
+        padding: 8px 10px;
+        outline: none;
+      }
+
+      .item.editing .text {
+        display: none;
+      }
+
+      .item.editing .edit {
+        display: block;
+      }
+
+      .footer {
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .hint code {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .toast {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--muted);
+        font-size: 12px;
+        display: none;
+      }
+
+      .toast.show {
+        display: block;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <div class="header">
+        <h1 class="title">Todo（Redis 学习用前端 Demo）</h1>
+        <div class="meta">
+          <span class="pill" title="仅使用后端接口 /api/todos（不做本地持久化）">
+            <span id="mode-dot" class="dot"></span>
+            <span>模式:</span>
+            <strong id="mode-text" style="font-weight: 650">检测中…</strong>
+          </span>
+          <span class="pill" title="可选后端接口：GET/POST/PATCH/DELETE /api/todos">
+            API: <span style="font-family: var(--mono)">/api/todos</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="content">
+        <form class="add" id="add-form">
+          <input
+            id="new-todo"
+            class="input"
+            type="text"
+            placeholder="输入任务内容，回车添加…（双击任务可编辑）"
+            autocomplete="off"
+            maxlength="200"
+          />
+          <button class="primary" type="submit">添加</button>
+        </form>
+
+        <div class="toolbar">
+          <div class="filters" role="group" aria-label="过滤">
+            <button type="button" class="filter" data-filter="all" aria-pressed="true">全部</button>
+            <button type="button" class="filter" data-filter="active" aria-pressed="false">未完成</button>
+            <button type="button" class="filter" data-filter="completed" aria-pressed="false">已完成</button>
+          </div>
+          <div class="actions">
+            <button type="button" id="refresh">刷新</button>
+            <button type="button" id="clear-completed" class="danger" disabled>清除已完成</button>
+          </div>
+        </div>
+
+        <ul id="todo-list" class="list" aria-label="Todo 列表"></ul>
+
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+        <div class="footer">
+          <div>
+            <strong id="count" style="font-weight: 650">0</strong> 项未完成
+          </div>
+          <div class="hint">
+            编辑：双击任务 / 保存：<code>Enter</code> / 取消：<code>Esc</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <template id="todo-item">
+      <li class="item" data-id="">
+        <div class="row">
+          <input class="toggle" type="checkbox" aria-label="完成" />
+          <span class="text"></span>
+          <input class="edit" type="text" maxlength="200" />
+        </div>
+        <button class="delete" type="button" aria-label="删除">×</button>
+      </li>
+    </template>
+
+    <script>
+      (() => {
+        const els = {
+          list: document.getElementById("todo-list"),
+          tpl: document.getElementById("todo-item"),
+          form: document.getElementById("add-form"),
+          input: document.getElementById("new-todo"),
+          count: document.getElementById("count"),
+          clearCompleted: document.getElementById("clear-completed"),
+          refresh: document.getElementById("refresh"),
+          modeDot: document.getElementById("mode-dot"),
+          modeText: document.getElementById("mode-text"),
+          toast: document.getElementById("toast"),
+          filterButtons: Array.from(document.querySelectorAll("button.filter")),
+        };
+
+        const state = {
+          todos: [],
+          filter: "all",
+        };
+
+        function uid() {
+          if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
+          return `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
+        }
+
+        function nowISO() {
+          return new Date().toISOString();
+        }
+
+        function normalizeTodos(payload) {
+          const raw = Array.isArray(payload) ? payload : payload?.todos;
+          if (!Array.isArray(raw)) return [];
+          return raw
+            .filter(Boolean)
+            .map((t) => ({
+              id: String(t.id ?? uid()),
+              text: String(t.text ?? t.content ?? "").trim(),
+              completed: Boolean(t.completed),
+              createdAt: String(t.createdAt ?? nowISO()),
+              updatedAt: String(t.updatedAt ?? t.createdAt ?? nowISO()),
+            }))
+            .filter((t) => t.text.length > 0);
+        }
+
+        function createService({ apiBase = "" } = {}) {
+          let mode = "unknown";
+
+          function setMode(next) {
+            mode = next;
+            els.modeText.textContent = next;
+            els.modeDot.classList.toggle("server", next === "server");
+            els.modeDot.classList.toggle("unavailable", next === "unavailable");
+          }
+
+          async function request(method, path, body) {
+            const res = await fetch(`${apiBase}${path}`, {
+              method,
+              headers: body ? { "Content-Type": "application/json" } : undefined,
+              body: body ? JSON.stringify(body) : undefined,
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const ct = res.headers.get("content-type") || "";
+            if (ct.includes("application/json")) return res.json();
+            return null;
+          }
+
+          async function init() {
+            try {
+              const data = await request("GET", "/api/todos");
+              setMode("server");
+              return normalizeTodos(data);
+            } catch {
+              setMode("unavailable");
+              return [];
+            }
+          }
+
+          async function list() {
+            try {
+              const data = await request("GET", "/api/todos");
+              setMode("server");
+              return normalizeTodos(data);
+            } catch (e) {
+              setMode("unavailable");
+              throw e;
+            }
+          }
+
+          async function create(text) {
+            const todo = { id: uid(), text: text.trim(), completed: false, createdAt: nowISO(), updatedAt: nowISO() };
+
+            try {
+              const data = await request("POST", "/api/todos", { text: todo.text });
+              setMode("server");
+              const created = normalizeTodos(data)[0];
+              return created ?? todo;
+            } catch (e) {
+              setMode("unavailable");
+              throw e;
+            }
+          }
+
+          async function patch(id, partial) {
+            try {
+              const data = await request("PATCH", `/api/todos/${encodeURIComponent(id)}`, partial);
+              setMode("server");
+              const updated = normalizeTodos(data)[0];
+              return updated ?? null;
+            } catch (e) {
+              setMode("unavailable");
+              throw e;
+            }
+          }
+
+          async function remove(id) {
+            try {
+              await request("DELETE", `/api/todos/${encodeURIComponent(id)}`);
+              setMode("server");
+            } catch (e) {
+              setMode("unavailable");
+              throw e;
+            }
+          }
+
+          return { init, list, create, patch, remove };
+        }
+
+        const service = createService({
+          apiBase: 'http://localhost:3000'
+        });
+
+        let toastTimer = null;
+        function toast(message) {
+          clearTimeout(toastTimer);
+          els.toast.textContent = message;
+          els.toast.classList.add("show");
+          toastTimer = setTimeout(() => els.toast.classList.remove("show"), 1600);
+        }
+
+        function filteredTodos() {
+          if (state.filter === "active") return state.todos.filter((t) => !t.completed);
+          if (state.filter === "completed") return state.todos.filter((t) => t.completed);
+          return state.todos;
+        }
+
+        function updateCounters() {
+          const remaining = state.todos.filter((t) => !t.completed).length;
+          els.count.textContent = String(remaining);
+          els.clearCompleted.disabled = state.todos.every((t) => !t.completed);
+        }
+
+        function setFilter(filter) {
+          state.filter = filter;
+          for (const btn of els.filterButtons) {
+            const active = btn.dataset.filter === filter;
+            btn.setAttribute("aria-pressed", active ? "true" : "false");
+          }
+          render();
+        }
+
+        function render() {
+          els.list.replaceChildren();
+          for (const todo of filteredTodos()) {
+            const node = els.tpl.content.firstElementChild.cloneNode(true);
+            node.dataset.id = todo.id;
+            node.classList.toggle("completed", todo.completed);
+
+            const toggle = node.querySelector(".toggle");
+            const text = node.querySelector(".text");
+            const edit = node.querySelector(".edit");
+
+            toggle.checked = todo.completed;
+            text.textContent = todo.text;
+            edit.value = todo.text;
+
+            els.list.appendChild(node);
+          }
+          updateCounters();
+        }
+
+        async function reload({ silent = false } = {}) {
+          try {
+            state.todos = await service.list();
+            render();
+            if (!silent) toast("已刷新");
+          } catch (e) {
+            if (!silent) toast(`刷新失败：${e?.message ?? e}`);
+          }
+        }
+
+        async function boot() {
+          state.todos = await service.init();
+          render();
+          if (els.modeText.textContent === "unavailable") toast("后端不可用：请先启动提供 /api/todos 的服务");
+          else toast("已就绪（API）");
+          els.input.focus();
+        }
+
+        els.form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const text = els.input.value.trim();
+          if (!text) return;
+
+          els.input.value = "";
+          try {
+            const created = await service.create(text);
+            state.todos = [created, ...state.todos];
+            render();
+          } catch (e2) {
+            toast(`添加失败：${e2?.message ?? e2}`);
+            await reload({ silent: true });
+          }
+        });
+
+        els.refresh.addEventListener("click", async () => {
+          await reload();
+        });
+
+        for (const btn of els.filterButtons) {
+          btn.addEventListener("click", () => setFilter(btn.dataset.filter));
+        }
+
+        els.clearCompleted.addEventListener("click", async () => {
+          const completed = state.todos.filter((t) => t.completed);
+          if (completed.length === 0) return;
+          try {
+            for (const t of completed) await service.remove(t.id);
+            state.todos = state.todos.filter((t) => !t.completed);
+            render();
+            toast("已清除已完成");
+          } catch (e) {
+            toast(`清除失败：${e?.message ?? e}`);
+            await reload({ silent: true });
+          }
+        });
+
+        els.list.addEventListener("click", async (e) => {
+          const item = e.target.closest(".item");
+          if (!item) return;
+          const id = item.dataset.id;
+
+          if (e.target.matches(".delete")) {
+            try {
+              await service.remove(id);
+              state.todos = state.todos.filter((t) => t.id !== id);
+              render();
+            } catch (e2) {
+              toast(`删除失败：${e2?.message ?? e2}`);
+              await reload({ silent: true });
+            }
+          }
+
+          if (e.target.matches(".toggle")) {
+            const completed = e.target.checked;
+            try {
+              const updated = await service.patch(id, { completed });
+              state.todos = state.todos.map((t) => (t.id === id ? { ...(updated ?? t), completed } : t));
+              render();
+            } catch (e2) {
+              toast(`更新失败：${e2?.message ?? e2}`);
+              await reload({ silent: true });
+            }
+          }
+        });
+
+        els.list.addEventListener("dblclick", (e) => {
+          const item = e.target.closest(".item");
+          if (!item) return;
+          item.classList.add("editing");
+          const edit = item.querySelector(".edit");
+          edit.focus();
+          edit.setSelectionRange(edit.value.length, edit.value.length);
+        });
+
+        els.list.addEventListener("keydown", async (e) => {
+          if (!e.target.matches(".edit")) return;
+          const item = e.target.closest(".item");
+          if (!item) return;
+          const id = item.dataset.id;
+          const original = state.todos.find((t) => t.id === id)?.text ?? "";
+
+          if (e.key === "Escape") {
+            e.target.value = original;
+            item.classList.remove("editing");
+            return;
+          }
+
+          if (e.key !== "Enter") return;
+          e.preventDefault();
+
+          const nextText = e.target.value.trim();
+          if (!nextText) {
+            toast("内容为空：将直接删除该任务");
+            try {
+              await service.remove(id);
+              state.todos = state.todos.filter((t) => t.id !== id);
+              render();
+            } catch (e2) {
+              toast(`删除失败：${e2?.message ?? e2}`);
+              await reload({ silent: true });
+            }
+            return;
+          }
+
+          try {
+            const updated = await service.patch(id, { text: nextText });
+            state.todos = state.todos.map((t) => (t.id === id ? { ...(updated ?? t), text: nextText } : t));
+            item.classList.remove("editing");
+            render();
+          } catch (e2) {
+            toast(`保存失败：${e2?.message ?? e2}`);
+            await reload({ silent: true });
+          }
+        });
+
+        els.list.addEventListener("focusout", (e) => {
+          if (!e.target.matches(".edit")) return;
+          const item = e.target.closest(".item");
+          if (!item) return;
+          item.classList.remove("editing");
+        });
+
+        boot();
+      })();
+    </script>
+  </body>
+</html>
