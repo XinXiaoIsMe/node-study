@@ -1,0 +1,15 @@
+{
+  "name": "net",
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.20.0",
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "dev:client": "tsx --watch demo1/client",
+    "dev:server": "tsx --watch demo1/server",
+    "dev:http": "tsx --watch demo2/http"
+  }
+}
