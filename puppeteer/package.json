@@ -1,0 +1,17 @@
+{
+  "name": "puppeteer-demo",
+  "type": "module",
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.20.0",
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx --watch index"
+  },
+  "dependencies": {
+    "puppeteer": "^24.35.0"
+  }
+}
