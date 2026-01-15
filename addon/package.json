@@ -1,0 +1,17 @@
+{
+  "name": "addon-demo",
+  "type": "commonjs",
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.20.0",
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx --watch index"
+  },
+  "dependencies": {
+    "node-addon-api": "^8.5.0"
+  }
+}
