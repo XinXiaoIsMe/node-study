@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #0b1020;
+            --panel: rgba(255, 255, 255, 0.06);
+            --panel-strong: rgba(255, 255, 255, 0.1);
+            --text: rgba(255, 255, 255, 0.92);
+            --muted: rgba(255, 255, 255, 0.7);
+            --faint: rgba(255, 255, 255, 0.55);
+            --border: rgba(255, 255, 255, 0.12);
+            --accent: #7c5cff;
+            --accent-2: #2dd4bf;
+            --danger: #fb7185;
+            --shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+        }
+
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+                "Segoe UI Emoji";
+            color: var(--text);
+            background:
+                radial-gradient(1000px 600px at 20% 10%, rgba(124, 92, 255, 0.35), transparent 60%),
+                radial-gradient(900px 500px at 80% 10%, rgba(45, 212, 191, 0.22), transparent 60%),
+                radial-gradient(900px 700px at 50% 90%, rgba(251, 113, 133, 0.15), transparent 60%),
+                linear-gradient(180deg, #070a14, var(--bg));
+        }
+
+        .wrap {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 32px 16px 64px;
+        }
+
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .title {
+            display: grid;
+            gap: 4px;
+        }
+        .title h1 {
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 0.3px;
+        }
+        .title p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .row {
+            display: grid;
+            gap: 10px;
+            padding: 14px 16px;
+        }
+
+        .row + .row { border-top: 1px solid var(--border); }
+
+        .grid2 {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: 1fr;
+        }
+        @media (min-width: 720px) {
+            .grid2 { grid-template-columns: 1.2fr 0.8fr; }
+        }
+
+        label {
+            font-size: 12px;
+            color: var(--muted);
+            display: grid;
+            gap: 6px;
+        }
+
+        .input, .select {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            padding: 10px 12px;
+            outline: none;
+        }
+        .select option {
+            color: #0b1020;
+            background: #ffffff;
+        }
+        .input:focus, .select:focus {
+            border-color: rgba(124, 92, 255, 0.55);
+            box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.18);
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn {
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            border-radius: 12px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+            user-select: none;
+        }
+        .btn:hover { background: rgba(255, 255, 255, 0.09); }
+        .btn:active { transform: translateY(1px); }
+        .btn.primary {
+            background: linear-gradient(135deg, rgba(124, 92, 255, 0.9), rgba(45, 212, 191, 0.65));
+            border-color: rgba(255, 255, 255, 0.18);
+        }
+        .btn.danger {
+            background: rgba(251, 113, 133, 0.12);
+            border-color: rgba(251, 113, 133, 0.35);
+            color: rgba(255, 255, 255, 0.92);
+        }
+        .btn.small { padding: 6px 10px; border-radius: 10px; font-size: 12px; }
+        .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+        .newTodo {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+        }
+
+        .status {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .badge {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border);
+            color: var(--muted);
+        }
+        .badge.ok { border-color: rgba(45, 212, 191, 0.35); color: rgba(45, 212, 191, 0.95); }
+        .badge.err { border-color: rgba(251, 113, 133, 0.35); color: rgba(251, 113, 133, 0.95); }
+
+        .list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 10px;
+            align-items: center;
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+        }
+        .item:first-child { border-top: 0; }
+
+        .todoText {
+            min-width: 0;
+            display: grid;
+            gap: 6px;
+        }
+        .todoTitle {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.35;
+            color: var(--text);
+            word-break: break-word;
+        }
+        .todoTitle.done { color: var(--faint); text-decoration: line-through; }
+        .todoMeta {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .todoEdit {
+            display: none;
+            gap: 8px;
+            grid-template-columns: 1fr auto auto;
+            align-items: center;
+        }
+        .item.editing .todoView { display: none; }
+        .item.editing .todoEdit { display: grid; }
+
+        .empty {
+            padding: 18px 16px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .footnote {
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+        .footnote code {
+            background: rgba(255,255,255,0.08);
+            padding: 2px 6px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        a { color: rgba(124, 92, 255, 0.95); }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+	        <div class="header">
+	            <div class="title">
+	                <h1>Todo List</h1>
+	            </div>
+	        </div>
+
+        <div class="panel" id="app">
+            <div class="row grid2">
+                <label>
+                    API Base URL
+                    <input class="input" id="apiBase" placeholder="http://localhost:3000" autocomplete="off" />
+                </label>
+                <label>
+                    过滤
+                    <select class="select" id="filter">
+                        <option value="all">全部</option>
+                        <option value="active">未完成</option>
+                        <option value="completed">已完成</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="row">
+                <form class="newTodo" id="newForm">
+                    <input class="input" id="newTitle" placeholder="写点什么…（Enter 添加）" autocomplete="off" />
+                    <button class="btn primary" id="addBtn" type="submit">添加</button>
+                </form>
+            </div>
+
+            <div class="row actions">
+                <div class="status">
+                    <span id="summary">加载中…</span>
+                    <span class="badge" id="apiState">API: 未连接</span>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end">
+                    <button class="btn" id="reloadBtn" type="button">刷新</button>
+                    <button class="btn danger" id="clearCompletedBtn" type="button">清理已完成</button>
+                </div>
+            </div>
+
+            <ul class="list" id="list" aria-live="polite"></ul>
+            <div class="empty" id="empty" hidden>暂无任务，先添加一个吧。</div>
+        </div>
+
+	    </div>
+
+    <script>
+        (() => {
+            /** @type {'all'|'active'|'completed'} */
+            let filter = 'all';
+
+            /** @type {{ id: string, title: string, completed: boolean }[]} */
+            let todos = [];
+
+            /** @type {boolean} */
+            let isBusy = false;
+
+            const els = {
+                apiBase: document.getElementById('apiBase'),
+                filter: document.getElementById('filter'),
+                newForm: document.getElementById('newForm'),
+                newTitle: document.getElementById('newTitle'),
+                addBtn: document.getElementById('addBtn'),
+                reloadBtn: document.getElementById('reloadBtn'),
+                clearCompletedBtn: document.getElementById('clearCompletedBtn'),
+                list: document.getElementById('list'),
+                empty: document.getElementById('empty'),
+                summary: document.getElementById('summary'),
+                apiState: document.getElementById('apiState'),
+            };
+
+            function getApiBase() {
+                const saved = localStorage.getItem('todo_api_base') || 'http://localhost:3000';
+                const value = (els.apiBase.value || saved).trim();
+                if (!value) return 'http://localhost:3000';
+                return value.replace(/\/+$/, '');
+            }
+
+            function setApiBase(value) {
+                const normalized = (value || '').trim().replace(/\/+$/, '');
+                els.apiBase.value = normalized;
+                if (normalized) localStorage.setItem('todo_api_base', normalized);
+            }
+
+            function setBusy(busy) {
+                isBusy = busy;
+                els.addBtn.disabled = busy;
+                els.reloadBtn.disabled = busy;
+                els.clearCompletedBtn.disabled = busy;
+            }
+
+            function setApiBadge(ok, text) {
+                els.apiState.className = 'badge ' + (ok ? 'ok' : 'err');
+                els.apiState.textContent = 'API: ' + text;
+            }
+
+            function normalizeTodo(raw) {
+                const id = raw && (raw.id ?? raw._id ?? raw.todoId ?? raw.uuid);
+                const title = raw && (raw.title ?? raw.text ?? raw.name);
+                const completed = !!(raw && (raw.completed ?? raw.done ?? raw.isDone));
+                if (id == null || title == null) return null;
+                return { id: String(id), title: String(title), completed };
+            }
+
+            function visibleTodos() {
+                if (filter === 'active') return todos.filter(t => !t.completed);
+                if (filter === 'completed') return todos.filter(t => t.completed);
+                return todos;
+            }
+
+            function render() {
+                const remaining = todos.filter(t => !t.completed).length;
+                els.summary.textContent = `共 ${todos.length} 条，未完成 ${remaining} 条`;
+
+                const list = visibleTodos();
+                els.list.replaceChildren();
+                els.empty.hidden = list.length !== 0;
+
+                const frag = document.createDocumentFragment();
+                for (const todo of list) {
+                    const li = document.createElement('li');
+                    li.className = 'item';
+                    li.dataset.id = todo.id;
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = todo.completed;
+                    checkbox.setAttribute('aria-label', '完成状态');
+
+                    const view = document.createElement('div');
+                    view.className = 'todoView';
+
+                    const textBox = document.createElement('div');
+                    textBox.className = 'todoText';
+
+                    const title = document.createElement('p');
+                    title.className = 'todoTitle' + (todo.completed ? ' done' : '');
+                    title.textContent = todo.title;
+
+                    const meta = document.createElement('div');
+                    meta.className = 'todoMeta';
+                    meta.textContent = `ID: ${todo.id}`;
+
+                    textBox.append(title, meta);
+
+                    const buttons = document.createElement('div');
+                    buttons.style.display = 'flex';
+                    buttons.style.gap = '8px';
+                    buttons.style.flexWrap = 'wrap';
+                    buttons.style.justifyContent = 'flex-end';
+
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'btn small';
+                    editBtn.type = 'button';
+                    editBtn.dataset.action = 'edit';
+                    editBtn.textContent = '编辑';
+
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'btn small danger';
+                    delBtn.type = 'button';
+                    delBtn.dataset.action = 'delete';
+                    delBtn.textContent = '删除';
+
+                    buttons.append(editBtn, delBtn);
+                    view.append(textBox, buttons);
+
+                    const edit = document.createElement('div');
+                    edit.className = 'todoEdit';
+
+                    const input = document.createElement('input');
+                    input.className = 'input';
+                    input.value = todo.title;
+                    input.dataset.role = 'editInput';
+
+                    const saveBtn = document.createElement('button');
+                    saveBtn.className = 'btn small primary';
+                    saveBtn.type = 'button';
+                    saveBtn.dataset.action = 'save';
+                    saveBtn.textContent = '保存';
+
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.className = 'btn small';
+                    cancelBtn.type = 'button';
+                    cancelBtn.dataset.action = 'cancel';
+                    cancelBtn.textContent = '取消';
+
+                    edit.append(input, saveBtn, cancelBtn);
+
+                    li.append(checkbox, view, edit);
+                    frag.append(li);
+                }
+
+                els.list.append(frag);
+            }
+
+            async function apiRequest(method, path, body) {
+                const base = getApiBase();
+                const url = new URL(path, base + '/');
+
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 12000);
+
+                try {
+                    const res = await fetch(url, {
+                        method,
+                        headers: body ? { 'content-type': 'application/json' } : undefined,
+                        body: body ? JSON.stringify(body) : undefined,
+                        signal: controller.signal,
+                    });
+
+                    if (res.status === 204) return null;
+
+                    const contentType = res.headers.get('content-type') || '';
+                    const payload = contentType.includes('application/json') ? await res.json() : await res.text();
+
+                    if (!res.ok) {
+                        const message =
+                            (payload && typeof payload === 'object' && (payload.message || payload.error)) ||
+                            (typeof payload === 'string' ? payload : '') ||
+                            `${res.status} ${res.statusText}`;
+                        throw new Error(message);
+                    }
+
+                    return payload;
+                }
+                finally {
+                    clearTimeout(timeout);
+                }
+            }
+
+            async function fetchTodosFromApi() {
+                const data = await apiRequest('GET', '/todos');
+                const list =
+                    Array.isArray(data) ? data :
+                    (Array.isArray(data && data.data) ? data.data :
+                    (Array.isArray(data && data.todos) ? data.todos : null));
+
+                if (!Array.isArray(list)) throw new Error('接口返回格式不正确：需要数组（或 { data: [] } / { todos: [] }）');
+
+                return list.map(normalizeTodo).filter(Boolean);
+            }
+
+            async function loadTodos() {
+                setBusy(true);
+                try {
+                    todos = await fetchTodosFromApi();
+                    setApiBadge(true, '已连接');
+                }
+                catch (e) {
+                    const msg = e && typeof e === 'object' && 'message' in e ? String(e.message) : '请求失败';
+                    setApiBadge(false, msg);
+                }
+                finally {
+                    setBusy(false);
+                    render();
+                }
+            }
+
+            async function createTodo(title) {
+                setBusy(true);
+                try {
+                    const data = await apiRequest('POST', '/todos', { title });
+                    const created = normalizeTodo(data && (data.todo ?? data));
+                    if (created) {
+                        todos = [created, ...todos.filter(t => t.id !== created.id)];
+                        setApiBadge(true, '已连接');
+                        render();
+                    }
+                    else {
+                        await loadTodos();
+                    }
+                }
+                catch (e) {
+                    const msg = e && typeof e === 'object' && 'message' in e ? String(e.message) : '创建失败';
+                    setApiBadge(false, msg);
+                }
+                finally {
+                    setBusy(false);
+                }
+            }
+
+            async function updateTodo(id, patch) {
+                setBusy(true);
+                const prev = todos;
+                todos = todos.map(t => (t.id === id ? { ...t, ...patch } : t));
+                render();
+
+                try {
+                    const data = await apiRequest('PATCH', `/todos/${encodeURIComponent(id)}`, patch);
+                    const updated = normalizeTodo(data && (data.todo ?? data));
+                    if (updated) {
+                        todos = todos.map(t => (t.id === id ? updated : t));
+                        render();
+                    }
+                    setApiBadge(true, '已连接');
+                }
+                catch (e) {
+                    todos = prev;
+                    render();
+                    const msg = e && typeof e === 'object' && 'message' in e ? String(e.message) : '更新失败';
+                    setApiBadge(false, msg);
+                }
+                finally {
+                    setBusy(false);
+                }
+            }
+
+            async function deleteTodo(id) {
+                setBusy(true);
+                const prev = todos;
+                todos = todos.filter(t => t.id !== id);
+                render();
+
+                try {
+                    await apiRequest('DELETE', `/todos/${encodeURIComponent(id)}`);
+                    setApiBadge(true, '已连接');
+                }
+                catch (e) {
+                    todos = prev;
+                    render();
+                    const msg = e && typeof e === 'object' && 'message' in e ? String(e.message) : '删除失败';
+                    setApiBadge(false, msg);
+                }
+                finally {
+                    setBusy(false);
+                }
+            }
+
+            function enterEditMode(li) {
+                li.classList.add('editing');
+                const input = li.querySelector('[data-role="editInput"]');
+                if (input) {
+                    input.focus();
+                    input.setSelectionRange(input.value.length, input.value.length);
+                }
+            }
+
+            function exitEditMode(li) {
+                li.classList.remove('editing');
+                const id = li.dataset.id;
+                const todo = todos.find(t => t.id === id);
+                const input = li.querySelector('[data-role="editInput"]');
+                if (todo && input) input.value = todo.title;
+            }
+
+            function wireEvents() {
+                els.filter.addEventListener('change', () => {
+                    // @ts-ignore
+                    filter = els.filter.value;
+                    render();
+                });
+
+                els.apiBase.addEventListener('change', async () => {
+                    setApiBase(els.apiBase.value);
+                    await loadTodos();
+                });
+
+                els.reloadBtn.addEventListener('click', loadTodos);
+
+                els.newForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const title = (els.newTitle.value || '').trim();
+                    if (!title) return;
+                    els.newTitle.value = '';
+                    await createTodo(title);
+                });
+
+                els.clearCompletedBtn.addEventListener('click', async () => {
+                    const completed = todos.filter(t => t.completed);
+                    if (completed.length === 0) return;
+                    if (!confirm(`确定删除 ${completed.length} 条已完成任务？`)) return;
+
+                    setBusy(true);
+                    const prev = todos;
+                    todos = todos.filter(t => !t.completed);
+                    render();
+
+                    try {
+                        // 兼容多数后端：逐个 DELETE
+                        for (const todo of completed) {
+                            // eslint-disable-next-line no-await-in-loop
+                            await apiRequest('DELETE', `/todos/${encodeURIComponent(todo.id)}`);
+                        }
+                        setApiBadge(true, '已连接');
+                    }
+                    catch (e) {
+                        todos = prev;
+                        render();
+                        const msg = e && typeof e === 'object' && 'message' in e ? String(e.message) : '清理失败';
+                        setApiBadge(false, msg);
+                    }
+                    finally {
+                        setBusy(false);
+                    }
+                });
+
+                els.list.addEventListener('change', async (e) => {
+                    if (isBusy) return;
+                    const target = e.target;
+                    if (!(target instanceof HTMLInputElement)) return;
+                    if (target.type !== 'checkbox') return;
+                    const li = target.closest('.item');
+                    if (!li || !li.dataset.id) return;
+                    await updateTodo(li.dataset.id, { completed: target.checked });
+                });
+
+                els.list.addEventListener('click', async (e) => {
+                    if (isBusy) return;
+                    const target = e.target;
+                    if (!(target instanceof HTMLElement)) return;
+                    const btn = target.closest('button[data-action]');
+                    if (!btn) return;
+                    const action = btn.dataset.action;
+                    const li = btn.closest('.item');
+                    if (!li || !li.dataset.id) return;
+                    const id = li.dataset.id;
+
+                    if (action === 'delete') {
+                        await deleteTodo(id);
+                        return;
+                    }
+                    if (action === 'edit') {
+                        enterEditMode(li);
+                        return;
+                    }
+                    if (action === 'cancel') {
+                        exitEditMode(li);
+                        return;
+                    }
+                    if (action === 'save') {
+                        const input = li.querySelector('[data-role="editInput"]');
+                        if (!(input instanceof HTMLInputElement)) return;
+                        const nextTitle = input.value.trim();
+                        if (!nextTitle) return;
+                        exitEditMode(li);
+                        await updateTodo(id, { title: nextTitle });
+                    }
+                });
+
+                els.list.addEventListener('keydown', async (e) => {
+                    if (isBusy) return;
+                    const target = e.target;
+                    if (!(target instanceof HTMLInputElement)) return;
+                    if (target.dataset.role !== 'editInput') return;
+                    const li = target.closest('.item');
+                    if (!li || !li.dataset.id) return;
+
+                    if (e.key === 'Escape') {
+                        exitEditMode(li);
+                    }
+                    if (e.key === 'Enter') {
+                        const nextTitle = target.value.trim();
+                        if (!nextTitle) return;
+                        exitEditMode(li);
+                        await updateTodo(li.dataset.id, { title: nextTitle });
+                    }
+                });
+            }
+
+            function init() {
+                setApiBase(localStorage.getItem('todo_api_base') || 'http://localhost:3000');
+                els.filter.value = filter;
+                render();
+                wireEvents();
+                loadTodos();
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>
