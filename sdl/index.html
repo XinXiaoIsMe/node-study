@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>SDL</h1>
+    <!-- <script src="https://unpkg.com/md5"></script> -->
+    <script>
+       //浏览器指纹
+        const createBrowserFingerprint = () => {
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')
+            ctx.fillStyle = 'red'
+            ctx.fillRect(0, 0, 1, 1)
+            // return md5(canvas.toDataURL())
+            // 此处应该用md5编码一下，但是md5没有提供相应的全局导入方式，引入会报错，所以为了方便不使用了
+            return canvas.toDataURL();
+        }
+        //谷歌abf12f62e03d160f7f24144ef1778396
+        //火狐80bea69bfc7cad5832d12e41714cf677
+        //Edge abf12f62e03d160f7f24144ef1778396
+
+        const ws = new WebSocket('ws://192.168.1.12:3000') //socket本地IP+端口
+        ws.addEventListener('open', () => {
+            ws.send(JSON.stringify({
+                action: 'login', //动作登录
+                id: 1, //用户ID
+                fingerprint: createBrowserFingerprint() //浏览器指纹
+            }))
+        })
+        ws.addEventListener('message', (message) => {
+            const data = JSON.parse(message.data)
+            if (data.action === 'logout') {
+                alert(data.message) //监听到挤下线操作提示弹框
+            }
+        })
+
+    </script>
+</body>
+
+</html>
