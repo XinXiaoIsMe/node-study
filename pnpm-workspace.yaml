@@ -4,3 +4,4 @@ trustPolicy: no-downgrade
 
 packages:
   - schedule
+  - large-file-upload/*
