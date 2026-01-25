@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button>授权</button>
+    <script>
+        const oBtn = document.querySelector('button');
+        const params = new URLSearchParams(location.search);
+        const userId = params.get('userId');
+        oBtn.addEventListener('click', () => {
+            fetch(`/auth?userId=${userId}`, {
+                method: 'post'
+            }).then(res => res.json()).then(data => {
+                if (data.code === '0') {
+                    location.assign(`${location.origin}/success.html`);
+                } else {
+                    location.assign(`${location.origin}/error.html`);
+                }
+            }).catch(() => {
+                location.assign(`${location.origin}/error.html`);
+            });
+        });
+    </script>
+</body>
+</html>

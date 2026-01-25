@@ -1,5 +1,5 @@
 {
-  "name": "node-study",
+  "name": "http2",
   "version": "1.0.0",
   "packageManager": "pnpm@10.20.0",
   "description": "",
@@ -8,17 +8,14 @@
   "keywords": [],
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsx --watch index.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "tsx": "^4.21.0"
+    "express": "^5.2.1"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^6.7.3",
     "@types/cors": "^2.8.19",
-    "@types/node": "^25.0.7",
-    "eslint": "^9.39.2",
-    "typescript": "^5.9.3"
+    "@types/express": "^5.0.6"
   }
 }

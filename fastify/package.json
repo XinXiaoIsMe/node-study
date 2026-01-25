@@ -1,0 +1,20 @@
+{
+  "name": "fastify",
+  "type": "module",
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.20.0",
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx --watch index.ts",
+    "seed": "tsx seed.ts"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "fastify": "^5.7.1",
+    "mysql2": "^3.16.1"
+  }
+}

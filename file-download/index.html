@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件下载测试</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 10px;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        td {
+            text-align: center;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <table>
+            <thead>
+                <tr>
+                    <th>文件名</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <script>
+        (() => {
+            let loading = false;
+
+            init();
+
+            function init() {
+                getFileList();
+            }
+            
+            function getFileList() {
+                loading = true;
+                const tbody = document.querySelector('tbody');
+                tbody.innerHTML = '';
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="2">加载中...</td>
+                    </tr>
+                `;
+                fetch('http://localhost:3000/file/list').then(res => res.json()).then(data => {
+                    loading = false;
+                    tbody.innerHTML = data.map(name => `
+                        <tr>
+                            <td>${name}</td>
+                            <td><button data-file-name="${name}">下载</button></td>
+                        </tr>
+                    `).join('');
+                    const downloadBtns = tbody.querySelectorAll('button');
+                    downloadBtns.forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const fileName = btn.getAttribute('data-file-name');
+                            download(fileName);
+                        });
+                    });
+                }).catch(err => {
+                    console.log(err);
+                    loading = false;
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="2">加载失败 <button>重试</button></td>
+                        </tr>
+                    `;
+                    const oRetryBtn = tbody.querySelector('button');
+                    oRetryBtn.addEventListener('click', () => {
+                        getFileList();
+                    });
+                });
+            }
+
+            function download(fileName) {
+                // 直接跳转到下载地址，让浏览器按 Content-Disposition 处理（预览/下载）
+                const url = `http://localhost:3000/file/download?fileName=${encodeURIComponent(fileName)}`;
+                const isPng = /\.png$/i.test(fileName);
+
+                if (isPng) {
+                    window.open(url, '_blank', 'noopener');
+                    return;
+                }
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.rel = 'noopener';
+                a.click();
+            }
+        })();
+    </script>
+</body>
+</html>
