@@ -1,0 +1,17 @@
+{
+  "name": "rabbit-mq-demo",
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.20.0",
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "dev:demo1": "node demo1/producer.js"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.9",
+    "express": "^5.2.1"
+  }
+}
