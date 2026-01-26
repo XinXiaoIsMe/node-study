@@ -1,0 +1,25 @@
+{
+  "name": "pm2-demo",
+  "type": "module",
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.20.0",
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx --watch index",
+    "build": "tsc -p tsconfig.json",
+    "start": "pnpm run build && node dist/index.js",
+    "start:pm2": "pnpm run build && node scripts/pm2-start.mjs",
+    "start:pm2:prod": "pnpm run build && node scripts/pm2-start.mjs production"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "typescript": "^5.9.3"
+  }
+}
